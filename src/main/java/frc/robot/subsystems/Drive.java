@@ -4,14 +4,19 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj2.command.CommandBase;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.motorcontrol.MotorController;
-import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.RelativeEncoder;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Drive extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
@@ -23,10 +28,18 @@ public class Drive extends SubsystemBase {
 
   private static MotorControllerGroup rightGroup = new MotorControllerGroup(motor1, motor2);
   private static MotorControllerGroup leftGroup = new MotorControllerGroup(motor3, motor4);
-
   private static DifferentialDrive differentialDrive = new DifferentialDrive(leftGroup, rightGroup);
+
+  private DifferentialDriveOdometry m_odometry;
+  private final AHRS ahrs = new AHRS(); 
+  private RelativeEncoder encoderRight = motor1.getEncoder();
+  private RelativeEncoder encoderLeft = motor3.getEncoder();
+
+  public final DifferentialDriveKinematics kDriveKinematics =
+        new DifferentialDriveKinematics(0.63); // measured 63 cm from middle to middle
+
   
-  public void Drive() {
+  public Drive() {
     // leftGroup.setInverted(true);
     
     // rightGroup.setInverted(true);
@@ -36,6 +49,7 @@ public class Drive extends SubsystemBase {
     //   differentialDrive.arcadeDrive(0, 0),
     //   this
     // ));
+    m_odometry = new DifferentialDriveOdometry(ahrs.getRotation2d(), encoderLeft.getPosition(), encoderRight.getPosition());
   }
 
   /**
@@ -74,10 +88,52 @@ public class Drive extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    m_odometry.update(ahrs.getRotation2d(), encoderLeft.getPosition(), encoderRight.getPosition());
   }
 
   @Override
   public void simulationPeriodic() {
     // This method will be called once per scheduler run during simulation
+  }
+
+  /**
+   * Returns the currently-estimated pose of the robot.
+   *
+   * @return The pose.
+   */
+  public Pose2d getPose() {
+    return m_odometry.getPoseMeters();
+  }
+
+  /**
+   * Returns the current wheel speeds of the robot.
+   *
+   * @return The current wheel speeds.
+   */
+  public DifferentialDriveWheelSpeeds getWheelSpeeds() {
+    return new DifferentialDriveWheelSpeeds(encoderLeft.getVelocity(), encoderRight.getVelocity());
+  }
+
+  /**
+   * Resets the odometry to the specified pose.
+   *
+   * @param pose The pose to which to set the odometry.
+   */
+  public void resetOdometry(Pose2d pose) {
+    resetEncoders();
+    m_odometry.resetPosition(
+      ahrs.getRotation2d(), encoderLeft.getPosition(), encoderRight.getPosition(), pose);
+  }
+
+  /** Resets the drive encoders to currently read a position of 0. */
+  public void resetEncoders() {
+    encoderLeft.setPosition(0);
+    encoderRight.setPosition(0);
+  }
+
+  public void tankDriveVolts(double leftVolts, double rightVolts) {
+    // System.out.println("TankDriveVolts: " + leftVolts + ", " + rightVolts);
+    leftGroup.setVoltage(leftVolts);
+    rightGroup.setVoltage(rightVolts);
   }
 }
