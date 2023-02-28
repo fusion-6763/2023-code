@@ -10,9 +10,12 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
+import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -32,12 +35,18 @@ public class Drive extends SubsystemBase {
 
   private DifferentialDriveOdometry m_odometry;
   private final AHRS ahrs = new AHRS(); 
-  private RelativeEncoder encoderRight = motor1.getEncoder();
-  private RelativeEncoder encoderLeft = motor3.getEncoder();
+  private RelativeEncoder encoderRight = motor2.getEncoder();
+  private RelativeEncoder encoderLeft = motor4.getEncoder();
 
   public final DifferentialDriveKinematics kDriveKinematics =
         new DifferentialDriveKinematics(0.63); // measured 63 cm from middle to middle
-
+  // public final MecanumDriveKinematics mecanumDriveKinematics =
+  //       new MecanumDriveKinematics(
+  //         new Translation2d(0, 0.2921), // 12.5" is .2921m
+  //         new Translation2d(0, -0.2921),
+  //         new Translation2d(0, 0.2921),
+  //         new Translation2d(0, -0.2921)
+  //       );
   
   public Drive() {
     // leftGroup.setInverted(true);
@@ -114,6 +123,11 @@ public class Drive extends SubsystemBase {
     return new DifferentialDriveWheelSpeeds(encoderLeft.getVelocity(), encoderRight.getVelocity());
   }
 
+  // public MecanumDriveWheelSpeeds getMechanumWheelSpeeds() {
+  //   return new MecanumDriveWheelSpeeds(encoderLeft.getVelocity(), encoderRight.getVelocity(),
+  //                                       encoderLeft.getVelocity(), encoderRight.getVelocity());
+  // }
+
   /**
    * Resets the odometry to the specified pose.
    *
@@ -132,8 +146,13 @@ public class Drive extends SubsystemBase {
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {
-    // System.out.println("TankDriveVolts: " + leftVolts + ", " + rightVolts);
     leftGroup.setVoltage(leftVolts);
     rightGroup.setVoltage(rightVolts);
   }
+
+  //public void straightRampUpDrive(double slowTime, double fastTime){
+  ////  double BACKWARDS = 1.0;
+ //   customDrive(0, BACKWARDS * 0.4), drive).withTimeout(slowTime);
+  //  customDrive(0, BACKWARDS * 0.4), drive).withTimeout(fastTime);
+ // }
 }

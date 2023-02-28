@@ -32,7 +32,8 @@ public class DriveForward extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    drive.customDrive(0.25, 0);
+    drive.customDrive(0.0, -0.4);
+    // drive.customDrive(0.25, 0);
   }
 
   // Called once the command ends or is interrupted.
