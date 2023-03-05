@@ -5,7 +5,6 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
-//import frc.robot.commands.Autos;
 //import frc.robot.commands.DriveForward;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Intake;
@@ -53,14 +52,8 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-   // new Trigger(m_exampleSubsystem::exampleCondition)
-       // .onTrue(new ExampleCommand(m_exampleSubsystem));
-
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
-    //m_driverController.button(5).whileTrue(m_exampleSubsystem.exampleMethodCommand());
-    //m_driverController.button(6).whileTrue(new DriveForward(drive));
     m_driverController.button(5).whileTrue(Commands.run(() -> intake.forward(), intake));
     m_driverController.button(6).whileTrue(Commands.run(() -> intake.backward(), intake));
   //   m_driverController.axisGreaterThan(1, 0.2).whileTrue(Commands.run(() ->
@@ -76,6 +69,6 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
     //powerDistribution.clearStickyFaults();
-    return null;//Autos.exampleAuto(m_exampleSubsystem);
+    return null;
   }
 }
