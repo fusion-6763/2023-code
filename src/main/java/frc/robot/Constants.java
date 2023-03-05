@@ -30,4 +30,8 @@ public final class Constants {
 		public static final int kDriverControllerPort = 0;
 		public static final double slowModeScalar = 0.9;
 	}
+	public static class VisionConstants {
+		public static final double[] purpleVector = {0.7071, 0.1, 1.0};
+		public static final double colorSimilarityThreshold = 0.8;
+	}
 }
