@@ -13,7 +13,25 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static class OperatorConstants {
-    public static final int kDriverControllerPort = 0;
-  }
+	public static class MachineConstants {
+		// geometry
+		public static final double wheelWidth = 0.63;
+		public static final double forwardGap = 0.2; // TODO: FIX THIS
+
+		// auto balancing
+		// TODO: Update these
+		public static final double autoBalanceScalar = 1.0;
+		public static final double autoBalanceScalarFrontBackDiff = 1.0;
+		public static final double beamBalancedGoalDegrees = 0;
+		public static final double beamBalancedDriveKp = 0.02;
+		public static final double beamBalancedAngleThresholdDegrees = 1;
+	}
+	public static class OperatorConstants {
+		public static final int kDriverControllerPort = 0;
+		public static final double slowModeScalar = 0.9;
+	}
+	public static class VisionConstants {
+		public static final double[] purpleVector = {0.7071, 0.1, 1.0};
+		public static final double colorSimilarityThreshold = 0.8;
+	}
 }
