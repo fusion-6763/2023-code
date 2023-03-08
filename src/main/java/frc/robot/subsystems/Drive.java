@@ -29,9 +29,6 @@ public class Drive extends SubsystemBase {
 
 	private static MotorControllerGroup rightGroup = new MotorControllerGroup(motor1, motor2);
 	private static MotorControllerGroup leftGroup = new MotorControllerGroup(motor3, motor4);
-
-  private static MotorControllerGroup rightGroup = new MotorControllerGroup(motor1, motor2);
-  private static MotorControllerGroup leftGroup = new MotorControllerGroup(motor3, motor4);
   private static DifferentialDrive differentialDrive = new DifferentialDrive(leftGroup, rightGroup);
 
   private DifferentialDriveOdometry m_odometry;
@@ -63,19 +60,6 @@ public class Drive extends SubsystemBase {
   }
 
 	private static Translation2d location = new Translation2d(1.88, 0.34);
-
-	public Drive() {
-		// leftGroup.setInverted(true);
-
-		// rightGroup.setInverted(true);
-		//differentialDrive.setSafetyEnabled(false);
-		// this.setDefaultCommand(Commands.run(
-		//   () ->
-		//   differentialDrive.arcadeDrive(0, 0),
-		//   this
-		// ));
-		gyro.calibrate();
-	}
 
 	/**
 	 * Example command factory method.
@@ -113,9 +97,9 @@ public class Drive extends SubsystemBase {
 	 * 
 	 * @return float of the rotation
 	 */
-	public double getPitch() { return gyro.getPitch(); }
-	public double getRoll() { return gyro.getRoll(); } // SHOULD ALWAYS BE NEAR 0
-	public double getYaw() { return gyro.getYaw(); }
+	// public double getPitch() { return gyro.getPitch(); }
+	// public double getRoll() { return gyro.getRoll(); } // SHOULD ALWAYS BE NEAR 0
+	// public double getYaw() { return gyro.getYaw(); }
 
 	/**
 	 * Series of functions to return velocity from the gyro. The gyro does not claim any
@@ -124,9 +108,9 @@ public class Drive extends SubsystemBase {
 	 * 
 	 * @return double for each velocity vector component
 	 */
-	public double GetVelX() { return gyro.getVelocityX(); }
-	public double GetVelY() { return gyro.getVelocityY(); }
-	public double GetVelZ() { return gyro.getVelocityZ(); }
+	// public double GetVelX() { return gyro.getVelocityX(); }
+	// public double GetVelY() { return gyro.getVelocityY(); }
+	// public double GetVelZ() { return gyro.getVelocityZ(); }
 
 
 
@@ -138,11 +122,6 @@ public class Drive extends SubsystemBase {
 	public boolean exampleCondition() {
 		// Query some boolean state, such as a digital sensor.
 		return false;
-	}
-
-	@Override
-	public void periodic() {
-		// This method will be called once per scheduler run
 	}
 
   @Override
