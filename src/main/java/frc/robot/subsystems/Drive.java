@@ -97,9 +97,9 @@ public class Drive extends SubsystemBase {
 	 * 
 	 * @return float of the rotation
 	 */
-	// public double getPitch() { return gyro.getPitch(); }
-	// public double getRoll() { return gyro.getRoll(); } // SHOULD ALWAYS BE NEAR 0
-	// public double getYaw() { return gyro.getYaw(); }
+	public double getPitch() { return ahrs.getPitch(); }
+	public double getRoll() { return ahrs.getRoll(); } // SHOULD ALWAYS BE NEAR 0
+	public double getYaw() { return ahrs.getYaw(); }
 
 	/**
 	 * Series of functions to return velocity from the gyro. The gyro does not claim any
@@ -108,9 +108,9 @@ public class Drive extends SubsystemBase {
 	 * 
 	 * @return double for each velocity vector component
 	 */
-	// public double GetVelX() { return gyro.getVelocityX(); }
-	// public double GetVelY() { return gyro.getVelocityY(); }
-	// public double GetVelZ() { return gyro.getVelocityZ(); }
+	public double GetVelX() { return ahrs.getVelocityX(); }
+	public double GetVelY() { return ahrs.getVelocityY(); }
+	public double GetVelZ() { return ahrs.getVelocityZ(); }
 
 
 
