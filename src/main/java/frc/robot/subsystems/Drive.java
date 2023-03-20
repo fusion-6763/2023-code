@@ -18,6 +18,7 @@ import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -47,7 +48,8 @@ public class Drive extends SubsystemBase {
   //       );
   
   public Drive() {
-    // leftGroup.setInverted(true);
+    leftGroup.setInverted(false);
+    rightGroup.setInverted(false);
     
     // rightGroup.setInverted(true);
     //differentialDrive.setSafetyEnabled(false);
@@ -128,6 +130,8 @@ public class Drive extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     m_odometry.update(ahrs.getRotation2d(), encoderLeft.getPosition(), encoderRight.getPosition());
+    //TODO: fix autochooser :(
+    //SmartDashboard.putData("Auto modes", autoChooser);
   }
 
   @Override

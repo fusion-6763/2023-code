@@ -4,7 +4,9 @@
 
 package frc.robot.subsystems;
 
+
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -13,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class Intake extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
   private final CANSparkMax motor = new CANSparkMax(5, MotorType.kBrushless);
+  private RelativeEncoder encoder = motor.getEncoder();
   public Intake() {}
 
   /**
@@ -50,6 +53,7 @@ public class Intake extends SubsystemBase {
 
   @Override
   public void periodic() {
+    //System.out.println(encoder.getVelocity());
     // This method will be called once per scheduler run
   }
 

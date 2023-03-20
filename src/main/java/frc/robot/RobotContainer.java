@@ -5,7 +5,6 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.CustomCommand;
 import frc.robot.commands.DriveForward;
 //import frc.robot.commands.Autos;
 //import frc.robot.commands.DriveForward;
@@ -25,6 +24,7 @@ import com.pathplanner.lib.commands.PPMecanumControllerCommand;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -55,6 +55,7 @@ public class RobotContainer {
   private final Intake intake = new Intake();
   private final PowerDistribution powerDistribution = new PowerDistribution(); // PDP / PDB
 
+
   // public static Boolean isSlower = false;
 
   // Controller for the driver
@@ -64,10 +65,13 @@ public class RobotContainer {
   private final Joystick vroomstick = new Joystick(Constants.OperatorConstants.vroomstickPort);
 
   // regular drive speed
-  private final double speed = 0.85;
+  private double regulerSpeed = 0.5;
+  private double speed = 0.5;
+  private double boostspeed = .98;
 
   private final JoystickButton outtakeButton = new JoystickButton(vroomstick, 5);
   private final JoystickButton intakeButton = new JoystickButton(vroomstick, 6);
+  
 
   private final SendableChooser<Command> autoChooser = new SendableChooser<Command>();
 
@@ -100,10 +104,9 @@ public class RobotContainer {
     powerDistribution.clearStickyFaults();
 
     // Sets the drive's default command to "teleop driving"
-
     drive.setDefaultCommand(Commands.run(
-        () -> drive.customDrive(m_driverController.getRawAxis(2) * speed, m_driverController.getRawAxis(1) * speed),
-        drive));
+         () -> drive.arcadeDrive(-m_driverController.getRawAxis(1) * speed, -m_driverController.getRawAxis(2) * speed),
+         drive));
 
     // sets the intake's default command to stop running.
     intake.setDefaultCommand(Commands.run(() -> intake.neutral(), intake));
@@ -232,6 +235,9 @@ public class RobotContainer {
   //   m_driverController.axisGreaterThan(1, 0.2).whileTrue(Commands.run(() ->
   //   drive.customDrive(m_driverController.getRawAxis(1), m_driverController.getRawAxis(2)), drive
   // ));
+
+  m_driverController.button(7).whileTrue(Commands.run(()-> speed = boostspeed));
+  m_driverController.button(7).whileFalse(Commands.run(()-> speed = regulerSpeed));
   }
 
   /**
