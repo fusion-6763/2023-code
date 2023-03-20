@@ -37,8 +37,15 @@ public class Drive extends SubsystemBase {
   private RelativeEncoder encoderRight = motor2.getEncoder();
   private RelativeEncoder encoderLeft = motor4.getEncoder();
 
+  private static final double ksVolts = 0;
+  private static final double kvVoltSecondsPerMeter = 0;
+  private static final double kaVoltSecondsSquaredPerMeter = 0.2;
+  private static final double kPDriveVel = 0;
+
   public final DifferentialDriveKinematics kDriveKinematics =
         new DifferentialDriveKinematics(0.63); // measured 63 cm from middle to middle
+  private static final double kMaxSpeedMetersPerSecond = 1;
+  private static final double kMaxAccelMetersPerSecond = 1;
   // public final MecanumDriveKinematics mecanumDriveKinematics =
   //       new MecanumDriveKinematics(
   //         new Translation2d(0, 0.2921), // 12.5" is .2921m
@@ -182,6 +189,7 @@ public class Drive extends SubsystemBase {
   public void tankDriveVolts(double leftVolts, double rightVolts) {
     leftGroup.setVoltage(leftVolts);
     rightGroup.setVoltage(rightVolts);
+    differentialDrive.feed();
   }
 
   //public void straightRampUpDrive(double slowTime, double fastTime){
