@@ -5,7 +5,6 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.CustomCommand;
 import frc.robot.commands.DriveForward;
 //import frc.robot.commands.Autos;
 //import frc.robot.commands.DriveForward;
@@ -13,6 +12,7 @@ import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Intake;
 
 import java.util.HashMap;
+import java.util.List;
 
 import javax.swing.plaf.basic.BasicComboBoxUI.FocusHandler;
 
@@ -24,7 +24,17 @@ import com.pathplanner.lib.commands.PPMecanumControllerCommand;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -33,6 +43,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandGroupBase;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -55,6 +66,7 @@ public class RobotContainer {
   private final Intake intake = new Intake();
   private final PowerDistribution powerDistribution = new PowerDistribution(); // PDP / PDB
 
+
   // public static Boolean isSlower = false;
 
   // Controller for the driver
@@ -64,10 +76,59 @@ public class RobotContainer {
   private final Joystick vroomstick = new Joystick(Constants.OperatorConstants.vroomstickPort);
 
   // regular drive speed
-  private final double speed = 0.85;
+  private double regulerSpeed = 0.5;
+  private double speed = 0.5;
+  private double boostspeed = .98;
 
   private final JoystickButton outtakeButton = new JoystickButton(vroomstick, 5);
   private final JoystickButton intakeButton = new JoystickButton(vroomstick, 6);
+
+  private static final double ksVolts = 0.23059;
+  private static final double kvVoltSecondsPerMeter = 0.078116;
+  private static final double kaVoltSecondsSquaredPerMeter = 0.012103;
+  private static final double kPDriveVel = 6.7006E-20;
+
+  public final DifferentialDriveKinematics kDriveKinematics =
+        new DifferentialDriveKinematics(0.63); // measured 63 cm from middle to middle
+  private static final double kMaxSpeedMetersPerSecond = 6;
+  private static final double kMaxAccelMetersPerSecond = 2;
+  private static final double kRamseteB = 2;
+  private static final double kRamseteZeta = 0.7;
+
+  DifferentialDriveVoltageConstraint autoVoltageConstraint = new DifferentialDriveVoltageConstraint(
+    new SimpleMotorFeedforward(
+      ksVolts,
+      kvVoltSecondsPerMeter,
+      kaVoltSecondsSquaredPerMeter),
+    kDriveKinematics,
+    10);
+
+  TrajectoryConfig config = new TrajectoryConfig(
+    kMaxSpeedMetersPerSecond,
+    kMaxAccelMetersPerSecond
+  )
+  .setKinematics(kDriveKinematics)
+  .addConstraint(autoVoltageConstraint);
+
+  Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
+  new Pose2d(0,0, new Rotation2d(0)),
+   List.of(new Translation2d(1,1), new Translation2d(2,1)),
+   new Pose2d(1,2, new Rotation2d(0)),
+   config);
+
+   RamseteCommand ramseteCommand = new RamseteCommand(
+     exampleTrajectory, 
+     drive::getPose,
+     new RamseteController(kRamseteB, kRamseteZeta),
+     new SimpleMotorFeedforward(ksVolts, kvVoltSecondsPerMeter, kaVoltSecondsSquaredPerMeter),
+     kDriveKinematics, 
+     drive::getWheelSpeeds, 
+     new PIDController(kPDriveVel,0, 0),
+     new PIDController(kPDriveVel,0, 0), 
+     drive::tankDriveVolts,
+     drive
+   );
+  
 
   private final SendableChooser<Command> autoChooser = new SendableChooser<Command>();
 
@@ -100,10 +161,9 @@ public class RobotContainer {
     powerDistribution.clearStickyFaults();
 
     // Sets the drive's default command to "teleop driving"
-
     drive.setDefaultCommand(Commands.run(
-        () -> drive.customDrive(m_driverController.getRawAxis(2) * speed, m_driverController.getRawAxis(1) * speed),
-        drive));
+         () -> drive.arcadeDrive(-m_driverController.getRawAxis(1) * speed, -m_driverController.getRawAxis(2) * speed),
+         drive));
 
     // sets the intake's default command to stop running.
     intake.setDefaultCommand(Commands.run(() -> intake.neutral(), intake));
@@ -232,6 +292,9 @@ public class RobotContainer {
   //   m_driverController.axisGreaterThan(1, 0.2).whileTrue(Commands.run(() ->
   //   drive.customDrive(m_driverController.getRawAxis(1), m_driverController.getRawAxis(2)), drive
   // ));
+
+  m_driverController.button(7).whileTrue(Commands.run(()-> speed = boostspeed));
+  m_driverController.button(7).whileFalse(Commands.run(()-> speed = regulerSpeed));
   }
 
   /**
@@ -241,52 +304,12 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
 
-
-    Command sequence1 = new SequentialCommandGroup(
-        Commands.run(() -> intake.backward(), intake).withTimeout(0.5 * TIME_SCALE),
-        // Commands.run(() -> intake.neutral(), intake),
-
-        Commands.run(() -> drive.customDrive(STRAIGHT, BACKWARDS * SPEED), drive).withTimeout(3.87 * TIME_SCALE),
-        Commands.run(() -> drive.customDrive(RIGHT * 0.4, BACKWARDS * SPEED), drive).withTimeout(2.97 * TIME_SCALE),
-        Commands.run(() -> intake.forward(), intake), // TODO: double check this
-        Commands.run(() -> drive.customDrive(STRAIGHT, FORWARDS * SPEED), drive).withTimeout(1.6 * TIME_SCALE),
-        Commands.run(() -> intake.neutral(), intake),
-        Commands.run(() -> drive.customDrive(STRAIGHT, BACKWARDS * SPEED), drive).withTimeout(0.9 * TIME_SCALE),
-        Commands.run(() -> drive.customDrive(RIGHT * 0.4, FORWARDS * SPEED), drive).withTimeout(2.97 * TIME_SCALE),
-        Commands.run(() -> drive.customDrive(STRAIGHT, FORWARDS * SPEED), drive).withTimeout(3.87 * TIME_SCALE),
-        Commands.run(() -> intake.backward(), intake).withTimeout(0.5 * TIME_SCALE),
-        Commands.run(() -> drive.customDrive(STRAIGHT, BACKWARDS * SPEED), intake).withTimeout(3.87 * TIME_SCALE)
-        );
+    drive.resetOdometry(exampleTrajectory.getInitialPose());
+    return ramseteCommand;
 
     
 
-    Command testSequenceStr8 = new SequentialCommandGroup(
-        Commands.run(() -> drive.customDrive(0, BACKWARDS * 0.8), drive).withTimeout(2));// drive straight
-    // 0.85 - 12 feet
-    // 0.85 front to front(1 second)- 9ft 8in
-    // 0.7 - 6 feet
-    // 0.4 front to front(2 second)-
-    // 0.4 - 2 feet
-
-    Command testSequenceTurn = new SequentialCommandGroup(
-        Commands.run(() -> drive.customDrive(RIGHT * 0.7, FORWARDS * 0.7), drive).withTimeout(1)); // sweep turn
-    // 0.4+0.4rotation - 45 degrees/1 second
-    // 0.4+0.85rotation - 2.5 full turns with negligible forward movement
-    // 0.7+0.7rotation - 170 degree u-turn
-
-    Command testSequenceTurnSharp = new SequentialCommandGroup(
-        Commands.run(() -> drive.customDrive(RIGHT * 0.575, 0), drive).withTimeout(1)); // pivot turn
-    // 0.4 - just over 60 degrees
-    // 0.7 - 270 degrees
-    // 0.85 - a little over 1.25 full turns/470-ish degrees
-
-    Command loopbackTest = new SequentialCommandGroup(
-        Commands.run(() -> drive.customDrive(0, FORWARDS * 0.7), drive).withTimeout(1),
-        Commands.run(() -> drive.customDrive(RIGHT * 0.575, 0), drive).withTimeout(1),
-        Commands.run(() -> drive.customDrive(0, FORWARDS * 0.7), drive).withTimeout(1),
-        Commands.run(() -> drive.customDrive(RIGHT * 0.575, 0), drive).withTimeout(1));
-
-    return autoChooser.getSelected();
+    //return autoChooser.getSelected();
   }
 
   // PathPlannerTrajectory examplePath = PathPlanner.loadPath("Basic", new

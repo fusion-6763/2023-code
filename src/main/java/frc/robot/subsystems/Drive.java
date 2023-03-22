@@ -18,6 +18,7 @@ import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -36,8 +37,15 @@ public class Drive extends SubsystemBase {
   private RelativeEncoder encoderRight = motor2.getEncoder();
   private RelativeEncoder encoderLeft = motor4.getEncoder();
 
+  private static final double ksVolts = 0;
+  private static final double kvVoltSecondsPerMeter = 0;
+  private static final double kaVoltSecondsSquaredPerMeter = 0.2;
+  private static final double kPDriveVel = 0;
+
   public final DifferentialDriveKinematics kDriveKinematics =
         new DifferentialDriveKinematics(0.63); // measured 63 cm from middle to middle
+  private static final double kMaxSpeedMetersPerSecond = 1;
+  private static final double kMaxAccelMetersPerSecond = 1;
   // public final MecanumDriveKinematics mecanumDriveKinematics =
   //       new MecanumDriveKinematics(
   //         new Translation2d(0, 0.2921), // 12.5" is .2921m
@@ -47,7 +55,8 @@ public class Drive extends SubsystemBase {
   //       );
   
   public Drive() {
-    // leftGroup.setInverted(true);
+    leftGroup.setInverted(false);
+    rightGroup.setInverted(false);
     
     // rightGroup.setInverted(true);
     //differentialDrive.setSafetyEnabled(false);
@@ -128,6 +137,8 @@ public class Drive extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     m_odometry.update(ahrs.getRotation2d(), encoderLeft.getPosition(), encoderRight.getPosition());
+    //TODO: fix autochooser :(
+    //SmartDashboard.putData("Auto modes", autoChooser);
   }
 
   @Override
@@ -178,6 +189,10 @@ public class Drive extends SubsystemBase {
   public void tankDriveVolts(double leftVolts, double rightVolts) {
     leftGroup.setVoltage(leftVolts);
     rightGroup.setVoltage(rightVolts);
+    System.out.println("" + leftVolts + " " + rightVolts);
+    //rightGroup.setVoltage(-leftVolts);
+    //leftGroup.setVoltage(-rightVolts);
+    differentialDrive.feed();
   }
 
   //public void straightRampUpDrive(double slowTime, double fastTime){
