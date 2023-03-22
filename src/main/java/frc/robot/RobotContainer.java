@@ -83,15 +83,15 @@ public class RobotContainer {
   private final JoystickButton outtakeButton = new JoystickButton(vroomstick, 5);
   private final JoystickButton intakeButton = new JoystickButton(vroomstick, 6);
 
-  private static final double ksVolts = 0.23059;
-  private static final double kvVoltSecondsPerMeter = 0.078116;
-  private static final double kaVoltSecondsSquaredPerMeter = 0.012103;
-  private static final double kPDriveVel = 6.7006E-20;
+  private static final double ksVolts = 0.26283;
+  private static final double kvVoltSecondsPerMeter = 2.8765;
+  private static final double kaVoltSecondsSquaredPerMeter = 0.36244;
+  private static final double kPDriveVel = 0.0001;
 
   public final DifferentialDriveKinematics kDriveKinematics =
         new DifferentialDriveKinematics(0.63); // measured 63 cm from middle to middle
-  private static final double kMaxSpeedMetersPerSecond = 6;
-  private static final double kMaxAccelMetersPerSecond = 2;
+  private static final double kMaxSpeedMetersPerSecond = 0.5;
+  private static final double kMaxAccelMetersPerSecond = 0.2;
   private static final double kRamseteB = 2;
   private static final double kRamseteZeta = 0.7;
 
@@ -112,8 +112,8 @@ public class RobotContainer {
 
   Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
   new Pose2d(0,0, new Rotation2d(0)),
-   List.of(new Translation2d(1,1), new Translation2d(2,1)),
-   new Pose2d(1,2, new Rotation2d(0)),
+   List.of(new Translation2d(1,0), new Translation2d(2,0)),
+   new Pose2d(2,2, new Rotation2d(0)),
    config);
 
    RamseteCommand ramseteCommand = new RamseteCommand(

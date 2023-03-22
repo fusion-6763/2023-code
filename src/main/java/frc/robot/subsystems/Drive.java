@@ -57,6 +57,9 @@ public class Drive extends SubsystemBase {
   public Drive() {
     leftGroup.setInverted(false);
     rightGroup.setInverted(false);
+    encoderLeft.setPositionConversionFactor(1/10.71);
+    
+    encoderRight.setPositionConversionFactor(1/10.71);
     
     // rightGroup.setInverted(true);
     //differentialDrive.setSafetyEnabled(false);
@@ -69,22 +72,6 @@ public class Drive extends SubsystemBase {
   }
 
 	private static Translation2d location = new Translation2d(1.88, 0.34);
-
-	/**
-	 * Example command factory method.
-	 *
-	 * @return a command
-	 */
-	public CommandBase myDefaultCommand() {
-		// Inline construction of command goes here.
-		// Subsystem::RunOnce implicitly requires `this` subsystem.
-		return run(
-			() -> {
-				System.out.println("help");
-				customDrive(0, 0);
-			}
-		);
-	}
 
 	public void customDrive (double forward, double rotation) {
 		arcadeDrive(forward, rotation);

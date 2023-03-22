@@ -41,7 +41,7 @@ public class AutoBalanceCommand extends CommandBase {
 		if (Math.abs(drivePower) > MAX_POWER) {
 			drivePower = Math.copySign(MAX_POWER, drivePower);
 		}
-
+		
 		m_DriveSubsystem.tankDrive(drivePower, drivePower);
 
 		// Debugging Print Statments
