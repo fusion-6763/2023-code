@@ -174,8 +174,8 @@ public class Drive extends SubsystemBase {
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {
-    leftGroup.setVoltage(leftVolts);
-    rightGroup.setVoltage(rightVolts);
+    leftGroup.setVoltage(leftVolts/3);
+    rightGroup.setVoltage(rightVolts/3);
     System.out.println("" + leftVolts + " " + rightVolts);
     //rightGroup.setVoltage(-leftVolts);
     //leftGroup.setVoltage(-rightVolts);

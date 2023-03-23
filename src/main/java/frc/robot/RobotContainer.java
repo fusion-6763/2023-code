@@ -11,6 +11,7 @@ import frc.robot.commands.DriveForward;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Intake;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -20,7 +21,9 @@ import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.RamseteAutoBuilder;
+import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.pathplanner.lib.commands.PPMecanumControllerCommand;
+import com.pathplanner.lib.commands.PPRamseteCommand;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
@@ -128,6 +131,20 @@ public class RobotContainer {
      drive::tankDriveVolts,
      drive
    );
+
+   ArrayList<PathPlannerTrajectory> pathGroup = (ArrayList<PathPlannerTrajectory>) PathPlanner.loadPathGroup("Basic", new PathConstraints(1, 1));
+   HashMap<String, Command> eventMap = new HashMap<>();
+
+   RamseteAutoBuilder autoBuilder = new RamseteAutoBuilder(
+    drive::getPose, 
+    drive::resetOdometry, 
+    new RamseteController(), 
+    kDriveKinematics, 
+    drive::tankDriveVolts, 
+    eventMap, 
+    drive);
+  Command fullAuto = autoBuilder.fullAuto(pathGroup);
+
   
 
   private final SendableChooser<Command> autoChooser = new SendableChooser<Command>();
@@ -305,7 +322,7 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
 
     drive.resetOdometry(exampleTrajectory.getInitialPose());
-    return ramseteCommand;
+    return fullAuto;
 
     
 
