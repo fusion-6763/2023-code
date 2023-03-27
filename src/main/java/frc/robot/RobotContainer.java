@@ -5,7 +5,11 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.AutoBalanceCommand;
 import frc.robot.commands.DriveForward;
+import frc.robot.commands.DriveForwardDistance;
+import frc.robot.commands.OuttakeCommand;
+import frc.robot.commands.Sit;
 //import frc.robot.commands.Autos;
 //import frc.robot.commands.DriveForward;
 import frc.robot.subsystems.Drive;
@@ -170,6 +174,10 @@ public class RobotContainer {
     autoChooser.setDefaultOption("two Cube Score Red", twoCubeScore_Red(intake, drive));
      //adds options in drop down in the shuffleboard
     autoChooser.addOption("two Cube Score Blue", twoCubeScore_Blue(intake, drive));
+    autoChooser.addOption("Small Forward", KnownDistanceForward(drive));
+    autoChooser.addOption("AutoBalance",new AutoBalanceCommand(drive));
+    autoChooser.addOption("BasicAutoBalance", BasicAutoBalance());
+    autoChooser.addOption("DumpAndJumpOnTheBalance", DumpAndJumpOnTheBalance());
     // Places a dropdown in the shuffleboard NOT in the SmartBoard.
     SmartDashboard.putData("Auto modes", autoChooser);
     // }
@@ -184,6 +192,30 @@ public class RobotContainer {
 
     // sets the intake's default command to stop running.
     intake.setDefaultCommand(Commands.run(() -> intake.neutral(), intake));
+  }
+
+  private Command DumpAndJumpOnTheBalance() {
+    return new SequentialCommandGroup(
+      new OuttakeCommand(intake).withTimeout(0.8),
+      new DriveForwardDistance(drive, 0.5, 5), //TODO: refine Distance
+      BasicAutoBalance()
+    );
+  }
+
+  private Command BasicAutoBalance() {
+    return new SequentialCommandGroup(
+      //new DriveForwardDistance(drive, 0.5, 2.5),
+      //new Sit(drive).withTimeout(0.5),
+      new AutoBalanceCommand(drive),
+      new Sit(drive).withTimeout(2),
+      new AutoBalanceCommand(drive)
+    );
+  }
+
+  private Command KnownDistanceForward(Drive d) {
+    return new SequentialCommandGroup(
+      new DriveForwardDistance(d, 0.6, 0.8)
+    );
   }
 
   private Command twoCubeScore_Blue(Intake intake, Drive drive){
@@ -322,11 +354,11 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
 
     drive.resetOdometry(exampleTrajectory.getInitialPose());
-    return fullAuto;
+    //return fullAuto;
 
     
 
-    //return autoChooser.getSelected();
+    return autoChooser.getSelected();
   }
 
   // PathPlannerTrajectory examplePath = PathPlanner.loadPath("Basic", new

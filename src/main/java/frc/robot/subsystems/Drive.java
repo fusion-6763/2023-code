@@ -57,8 +57,8 @@ public class Drive extends SubsystemBase {
   public Drive() {
     leftGroup.setInverted(false);
     rightGroup.setInverted(false);
-    encoderLeft.setPositionConversionFactor(1/10.71);
     
+    encoderLeft.setPositionConversionFactor(1/10.71);
     encoderRight.setPositionConversionFactor(1/10.71);
     
     // rightGroup.setInverted(true);
@@ -81,7 +81,8 @@ public class Drive extends SubsystemBase {
 	}
 	public void tankDrive(double left, double right) {
 		// NOTE: In tank drive, both left and right should be positive for forwards per the API
-		differentialDrive.tankDrive(left, right);
+    System.out.println(left + " - " + right);
+		differentialDrive.tankDrive(left, -right);
 	}
 
 
@@ -96,6 +97,7 @@ public class Drive extends SubsystemBase {
 	public double getPitch() { return ahrs.getPitch(); }
 	public double getRoll() { return ahrs.getRoll(); } // SHOULD ALWAYS BE NEAR 0
 	public double getYaw() { return ahrs.getYaw(); }
+  public double getAngle() { return ahrs.getAngle(); }
 
 	/**
 	 * Series of functions to return velocity from the gyro. The gyro does not claim any
@@ -109,6 +111,11 @@ public class Drive extends SubsystemBase {
 	public double GetVelZ() { return ahrs.getVelocityZ(); }
 
 
+  /**
+   * Returns the encoders, this is for autonomous commands
+   */
+  public RelativeEncoder getLeftEncoder() { return encoderLeft; }
+  public RelativeEncoder getRightEncoder() { return encoderRight; }
 
 	/**
 	 * An example method querying a boolean state of the subsystem (for example, a digital sensor).
@@ -124,7 +131,6 @@ public class Drive extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     m_odometry.update(ahrs.getRotation2d(), encoderLeft.getPosition(), encoderRight.getPosition());
-    //TODO: fix autochooser :(
     //SmartDashboard.putData("Auto modes", autoChooser);
   }
 
@@ -176,7 +182,7 @@ public class Drive extends SubsystemBase {
   public void tankDriveVolts(double leftVolts, double rightVolts) {
     leftGroup.setVoltage(leftVolts/3);
     rightGroup.setVoltage(rightVolts/3);
-    System.out.println("" + leftVolts + " " + rightVolts);
+    //System.out.println("" + leftVolts + " " + rightVolts);
     //rightGroup.setVoltage(-leftVolts);
     //leftGroup.setVoltage(-rightVolts);
     differentialDrive.feed();

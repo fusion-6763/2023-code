@@ -14,17 +14,18 @@ package frc.robot;
  */
 public final class Constants {
   public static class MachineConstants {
-	public static final double beamBalancedGoalDegrees = 0;
-	public static final double beamBalancedAngleThresholdDegrees = 1.5;
-	public static final double beamBalancedDriveKp = 1.0;
-	public static final double autoBalanceScalarFrontBackDiff = 1.0;
+	  public static final double beamBalancedGoalDegrees = 0;
+	  public static final double beamBalancedAngleThresholdDegrees = 1.5;
+	  public static final double beamBalancedDriveKp = 1.0;
+	  public static final double autoBalanceScalarFrontBackDiff = 1.0;
+    public static final double straightCorrectionCoeff = 0.007;
   }
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
     public static final int vroomstickPort = 1;
   }
   public static class VisionConstants {
-	public static final double[] purpleVector = {0.701, 0.1, 1.0};
-	public static final double colorSimilarityThreshold = 0.8;
+	  public static final double[] purpleVector = {0.701, 0.1, 1.0};
+	  public static final double colorSimilarityThreshold = 0.8;
   }
 }
