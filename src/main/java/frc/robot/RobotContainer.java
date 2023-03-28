@@ -14,6 +14,7 @@ import frc.robot.commands.Sit;
 //import frc.robot.commands.DriveForward;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Vision;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,6 +72,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final Drive drive = new Drive(); // Robot wheels
   private final Intake intake = new Intake();
+  //private final Vision vision = new Vision();
   private final PowerDistribution powerDistribution = new PowerDistribution(); // PDP / PDB
 
 
@@ -197,17 +199,18 @@ public class RobotContainer {
   private Command DumpAndJumpOnTheBalance() {
     return new SequentialCommandGroup(
       new OuttakeCommand(intake).withTimeout(0.8),
-      new DriveForwardDistance(drive, 0.5, 5), //TODO: refine Distance
+      new DriveForwardDistance(drive, 0.6, -5), //TODO: refine Distance
+	  //new DriveForwardDistance(drive, 0.5, 2),
       BasicAutoBalance()
     );
   }
 
   private Command BasicAutoBalance() {
     return new SequentialCommandGroup(
-      //new DriveForwardDistance(drive, 0.5, 2.5),
-      //new Sit(drive).withTimeout(0.5),
       new AutoBalanceCommand(drive),
-      new Sit(drive).withTimeout(2),
+      new Sit(drive).withTimeout(1),
+      new AutoBalanceCommand(drive),
+      new Sit(drive).withTimeout(1),
       new AutoBalanceCommand(drive)
     );
   }

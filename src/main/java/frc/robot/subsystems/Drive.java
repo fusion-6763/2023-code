@@ -14,12 +14,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
-import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Drive extends SubsystemBase {
@@ -80,8 +76,7 @@ public class Drive extends SubsystemBase {
 		differentialDrive.arcadeDrive(forward, rotation);
 	}
 	public void tankDrive(double left, double right) {
-		// NOTE: In tank drive, both left and right should be positive for forwards per the API
-    System.out.println(left + " - " + right);
+		// they should both be positive values, but our motors aren't flipped so we'll fix it in post
 		differentialDrive.tankDrive(left, -right);
 	}
 

@@ -10,12 +10,10 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 
 /** An example command that uses an example subsystem. */
 public class DriveForwardDistance extends CommandBase {
-  @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
   private final Drive drive;
   private double _speed;
   private double _distance;
   private double start_angle;
-  private double encoder_start;
 
   /**
    * Creates a new ExampleCommand.
@@ -33,10 +31,8 @@ public class DriveForwardDistance extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    //drive.customDrive(0.25, 0);
     start_angle = drive.getYaw();
     drive.resetEncoders();
-    //encoder_start = Math.abs(drive.getLeftEncoder().getPosition());
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -48,7 +44,6 @@ public class DriveForwardDistance extends CommandBase {
     double l2 = Math.min(_speed - angle_error * Constants.MachineConstants.straightCorrectionCoeff, 0.98);
 
     drive.tankDrive(l1, l2);
-    //drive.arcadeDrive(0.4, 0);
   }
 
   // Called once the command ends or is interrupted.
@@ -58,7 +53,6 @@ public class DriveForwardDistance extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    System.out.println(0 + " __ " + drive.getLeftEncoder().getPosition());
     if (_distance < Math.abs(drive.getLeftEncoder().getPosition()) ) {
       return true;
     }

@@ -30,6 +30,7 @@ public class DriveForward extends CommandBase {
   }
 
   // Called every time the scheduler runs while the command is scheduled.
+  // This is about every 50ms
   @Override
   public void execute() {
     drive.customDrive(0.0, -0.4);
