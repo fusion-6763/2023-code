@@ -52,10 +52,13 @@ public class Drive extends SubsystemBase {
   
   public Drive() {
     leftGroup.setInverted(false);
-    rightGroup.setInverted(false);
+    rightGroup.setInverted(true);
     
-    encoderLeft.setPositionConversionFactor(1/10.71);
-    encoderRight.setPositionConversionFactor(1/10.71);
+    encoderLeft.setPositionConversionFactor(2.3);
+    encoderRight.setPositionConversionFactor(2.3);
+    
+    // encoderLeft.setPositionConversionFactor(1/10.71);
+    // encoderRight.setPositionConversionFactor(1/10.71);
     
     // rightGroup.setInverted(true);
     //differentialDrive.setSafetyEnabled(false);
@@ -76,8 +79,8 @@ public class Drive extends SubsystemBase {
 		differentialDrive.arcadeDrive(forward, rotation);
 	}
 	public void tankDrive(double left, double right) {
-		// they should both be positive values, but our motors aren't flipped so we'll fix it in post
-		differentialDrive.tankDrive(left, -right);
+		// NOTE: In tank drive, both left and right should be positive for forwards per the API
+		differentialDrive.tankDrive(left, right);
 	}
 
 

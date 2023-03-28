@@ -8,6 +8,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AutoBalanceCommand;
 import frc.robot.commands.DriveForward;
 import frc.robot.commands.DriveForwardDistance;
+import frc.robot.commands.NavXTurn;
 import frc.robot.commands.OuttakeCommand;
 import frc.robot.commands.Sit;
 //import frc.robot.commands.Autos;
@@ -72,7 +73,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final Drive drive = new Drive(); // Robot wheels
   private final Intake intake = new Intake();
-  //private final Vision vision = new Vision();
+  private final Vision vision = new Vision();
   private final PowerDistribution powerDistribution = new PowerDistribution(); // PDP / PDB
 
 
@@ -180,6 +181,7 @@ public class RobotContainer {
     autoChooser.addOption("AutoBalance",new AutoBalanceCommand(drive));
     autoChooser.addOption("BasicAutoBalance", BasicAutoBalance());
     autoChooser.addOption("DumpAndJumpOnTheBalance", DumpAndJumpOnTheBalance());
+    autoChooser.addOption("Turn90", new NavXTurn(drive, 90));
     // Places a dropdown in the shuffleboard NOT in the SmartBoard.
     SmartDashboard.putData("Auto modes", autoChooser);
     // }
@@ -217,7 +219,12 @@ public class RobotContainer {
 
   private Command KnownDistanceForward(Drive d) {
     return new SequentialCommandGroup(
-      new DriveForwardDistance(d, 0.6, 0.8)
+      new DriveForwardDistance(d, 0.3, 7)
+      //encoder = 1
+      //1: 3 3/8 in
+      //5: 12 1/2 in
+      //10: 23 5/8 in
+      //20: 46 1/2 in
     );
   }
 
@@ -363,13 +370,6 @@ public class RobotContainer {
 
     return autoChooser.getSelected();
   }
-
-  // PathPlannerTrajectory examplePath = PathPlanner.loadPath("Basic", new
-  // PathConstraints(3, 3));
-  // HashMap<String, Command> eventMap = new HashMap<>();
-  // eventMap.put("IntakeOn", Commands.run(() -> System.out.println("IntakeOn")));
-  // eventMap.put("IntakeOff", Commands.run(() ->
-  // System.out.println("IntakeOff")));
 
   // return new SequentialCommandGroup(new InstantCommand(()-> {
   // drive.resetOdometry(examplePath.getInitialPose());

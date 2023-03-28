@@ -34,7 +34,7 @@ public class NavXTurn extends CommandBase {
 
 		double angle_diff = current_angle - _angle;
 		// if we're within 15 degrees, then slow us down a bit
-		double turning_speed = (Math.abs(angle_diff) < 15) ? MIN_TURN_SPEED : NORMAL_TURN_SPEED;
+		double turning_speed = (Math.abs(angle_diff) < 30) ? MIN_TURN_SPEED : NORMAL_TURN_SPEED;
 		if( angle_diff < 0 ) {
 			m_DriveSubsystem.tankDrive(turning_speed, -turning_speed);
 		} else {
