@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AutoBalanceCommand;
+import frc.robot.commands.DriveBackwardDistance;
 import frc.robot.commands.DriveForward;
 import frc.robot.commands.DriveForwardDistance;
 import frc.robot.commands.NavXTurn;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.swing.JSlider;
 import javax.swing.plaf.basic.BasicComboBoxUI.FocusHandler;
 
 import com.pathplanner.lib.PathConstraints;
@@ -46,6 +48,7 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.simulation.JoystickSim;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -59,6 +62,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -84,14 +88,22 @@ public class RobotContainer {
       OperatorConstants.kDriverControllerPort);
 
   private final Joystick vroomstick = new Joystick(Constants.OperatorConstants.vroomstickPort);
-
+  
   // regular drive speed
   private double regulerSpeed = 0.5;
-  private double speed = 0.5;
+  private double turnSpeed = 0.8;
   private double boostspeed = .98;
+  private double driveSpeed = regulerSpeed;
 
-  private final JoystickButton outtakeButton = new JoystickButton(vroomstick, 5);
-  private final JoystickButton intakeButton = new JoystickButton(vroomstick, 6);
+  //These values control how the robot speed control operates.
+  //IMPORTANT!: Only ONE of these values should be 1, and the other should be zero.
+  // when enableDriverBoost is 1 and enableControllerSlider = 0 Robot is slow unless boost button pressed
+  private double enableDriverBoost = 0; //Robot is slow unless boost button pressed
+  private double enableControllerSlider = 1; //Robot speed is controlled by vroomstick slider
+   
+  //private final JoystickButton outtakeButton = new JoystickButton(vroomstick, 5);
+  //private final JoystickButton intakeButton = new JoystickButton(vroomstick, 6);
+  
 
   private static final double ksVolts = 0.26283;
   private static final double kvVoltSecondsPerMeter = 2.8765;
@@ -156,14 +168,21 @@ public class RobotContainer {
 
   private final SendableChooser<Command> autoChooser = new SendableChooser<Command>();
 
-    double FORWARDS = -1.0;
-    double BACKWARDS = 1.0;
+    double FORWARDS = 1.0;
+    double BACKWARDS = -1.0;
     double SPEED = 0.7;
     double TURNSPEED = 0.5;
     double LEFT = -1.0;
     double RIGHT = 1.0;
     double TIME_SCALE = 1.0;
     double STRAIGHT = 0;
+
+    //Returns a double where control is the percentage distance between min and max
+    //IE: (5, 10, 0.5) returns 7.5
+    // (0.1, .9, 1) returns .9 while (0.1, .9, 0) returns .1
+    private static final double minMaxSlider(double _min, double _max, double control) {
+      return _min + ((_max - _min) * control);
+    }
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -176,12 +195,13 @@ public class RobotContainer {
      // Default Auto (when you turn of the robot, it will change auto back to this)
     autoChooser.setDefaultOption("two Cube Score Red", twoCubeScore_Red(intake, drive));
      //adds options in drop down in the shuffleboard
+    autoChooser.addOption("Do NOTHING", null);
     autoChooser.addOption("two Cube Score Blue", twoCubeScore_Blue(intake, drive));
-    autoChooser.addOption("Small Forward", KnownDistanceForward(drive));
-    autoChooser.addOption("AutoBalance",new AutoBalanceCommand(drive));
-    autoChooser.addOption("BasicAutoBalance", BasicAutoBalance());
+    //autoChooser.addOption("Small BACKWARD", KnownDistanceForward(drive));
+    //autoChooser.addOption("AutoBalance",new AutoBalanceCommand(drive));
+    //autoChooser.addOption("BasicAutoBalance", BasicAutoBalance());
     autoChooser.addOption("DumpAndJumpOnTheBalance", DumpAndJumpOnTheBalance());
-    autoChooser.addOption("Turn90", new NavXTurn(drive, 90));
+    //autoChooser.addOption("Turn90", new NavXTurn(drive, 90));
     // Places a dropdown in the shuffleboard NOT in the SmartBoard.
     SmartDashboard.putData("Auto modes", autoChooser);
     // }
@@ -191,19 +211,27 @@ public class RobotContainer {
 
     // Sets the drive's default command to "teleop driving"
     drive.setDefaultCommand(Commands.run(
-         () -> drive.arcadeDrive(-m_driverController.getRawAxis(1) * speed, -m_driverController.getRawAxis(2) * speed),
+         () -> drive.arcadeDrive(-m_driverController.getRawAxis(1) * (((-vroomstick.getRawAxis(3) + 1.4) *.634 * enableControllerSlider) + (driveSpeed * enableDriverBoost)) , -m_driverController.getRawAxis(2) * turnSpeed),
          drive));
+
+        
 
     // sets the intake's default command to stop running.
     intake.setDefaultCommand(Commands.run(() -> intake.neutral(), intake));
+
+    
   }
 
   private Command DumpAndJumpOnTheBalance() {
     return new SequentialCommandGroup(
       new OuttakeCommand(intake).withTimeout(0.8),
-      new DriveForwardDistance(drive, 0.6, -5), //TODO: refine Distance
+      Commands.run(() -> intake.neutral(), intake).withTimeout(0.2 * TIME_SCALE),
+      new DriveBackwardDistance(drive, 0.8, 48), //TODO: refine Distance
 	  //new DriveForwardDistance(drive, 0.5, 2),
-      BasicAutoBalance()
+     new AutoBalanceCommand(drive),
+     new DriveBackwardDistance(drive, 0.5, 48),
+     new DriveForwardDistance(drive ,0.8, 48),
+     new AutoBalanceCommand(drive)
     );
   }
 
@@ -219,7 +247,7 @@ public class RobotContainer {
 
   private Command KnownDistanceForward(Drive d) {
     return new SequentialCommandGroup(
-      new DriveForwardDistance(d, 0.3, 7)
+      new DriveBackwardDistance(d, 0.3, 12)
       //encoder = 1
       //1: 3 3/8 in
       //5: 12 1/2 in
@@ -340,8 +368,9 @@ public class RobotContainer {
     // cancelling on release.
     //m_driverController.button(5).whileTrue(m_exampleSubsystem.exampleMethodCommand());
     //m_driverController.button(6).whileTrue(new DriveForward(drive));
-    m_driverController.button(5).whileTrue(Commands.run(() -> intake.forward(), intake));
 
+    m_driverController.button(5).whileTrue(Commands.run(() -> intake.forward(), intake));
+      
     //EventLoop el = new EventLoop();
    // el.bind(() -> Commands.run(() -> intake.forward(), intake));
     //el.bind(() -> System.out.println("Joystick Press!"));
@@ -352,8 +381,9 @@ public class RobotContainer {
   //   drive.customDrive(m_driverController.getRawAxis(1), m_driverController.getRawAxis(2)), drive
   // ));
 
-  m_driverController.button(7).whileTrue(Commands.run(()-> speed = boostspeed));
-  m_driverController.button(7).whileFalse(Commands.run(()-> speed = regulerSpeed));
+  
+  m_driverController.button(7).whileTrue(Commands.run(()-> driveSpeed = boostspeed));
+  m_driverController.button(7).whileFalse(Commands.run(()-> driveSpeed = regulerSpeed)); // USING NOB, NOT BUTTON
   }
 
   /**

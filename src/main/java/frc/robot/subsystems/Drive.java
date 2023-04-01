@@ -72,7 +72,7 @@ public class Drive extends SubsystemBase {
 
 	private static Translation2d location = new Translation2d(1.88, 0.34);
 
-	public void customDrive (double forward, double rotation) {
+	public void customDrive (double rotation, double forward) {
 		arcadeDrive(forward, rotation);
 	}
 	public void arcadeDrive(double forward, double rotation) {
