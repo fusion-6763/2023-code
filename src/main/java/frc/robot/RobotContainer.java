@@ -33,6 +33,8 @@ import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import com.pathplanner.lib.commands.PPMecanumControllerCommand;
 import com.pathplanner.lib.commands.PPRamseteCommand;
 
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -55,6 +57,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandGroupBase;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -79,7 +82,7 @@ public class RobotContainer {
   private final Intake intake = new Intake();
   private final Vision vision = new Vision();
   private final PowerDistribution powerDistribution = new PowerDistribution(); // PDP / PDB
-
+  private UsbCamera camera;
 
   // public static Boolean isSlower = false;
 
@@ -196,7 +199,9 @@ public class RobotContainer {
     autoChooser.setDefaultOption("two Cube Score Red", twoCubeScore_Red(intake, drive));
      //adds options in drop down in the shuffleboard
     autoChooser.addOption("Do NOTHING", null);
-    autoChooser.addOption("two Cube Score Blue", twoCubeScore_Blue(intake, drive));
+    autoChooser.addOption("generic", generic_auto(intake, drive));
+    autoChooser.addOption("2 cube basic auto", basic_two_cube_auto());
+    autoChooser.addOption("Taxi", Taxi_Auto());
     //autoChooser.addOption("Small BACKWARD", KnownDistanceForward(drive));
     //autoChooser.addOption("AutoBalance",new AutoBalanceCommand(drive));
     //autoChooser.addOption("BasicAutoBalance", BasicAutoBalance());
@@ -211,7 +216,7 @@ public class RobotContainer {
 
     // Sets the drive's default command to "teleop driving"
     drive.setDefaultCommand(Commands.run(
-         () -> drive.arcadeDrive(-m_driverController.getRawAxis(1) * (((-vroomstick.getRawAxis(3) + 1.4) *.634 * enableControllerSlider) + (driveSpeed * enableDriverBoost)) , -m_driverController.getRawAxis(2) * turnSpeed),
+         () -> drive.arcadeDrive(-m_driverController.getRawAxis(1) * ((minMaxSlider(0.4, 0.9, (-vroomstick.getRawAxis(3) + 1) *.5) * enableControllerSlider) + (driveSpeed * enableDriverBoost)) , -m_driverController.getRawAxis(2) * turnSpeed),
          drive));
 
         
@@ -219,19 +224,36 @@ public class RobotContainer {
     // sets the intake's default command to stop running.
     intake.setDefaultCommand(Commands.run(() -> intake.neutral(), intake));
 
-    
+    camera = CameraServer.startAutomaticCapture();
   }
+
+  // private Command DumpAndJumpOnTheBalance() {
+  //   return new SequentialCommandGroup(
+  //     new OuttakeCommand(intake).withTimeout(0.8),
+  //     Commands.run(() -> intake.neutral(), intake).withTimeout(0.2 * TIME_SCALE),
+  //     new DriveBackwardDistance(drive, 0.8, 48), //TODO: refine Distance
+	//   //new DriveForwardDistance(drive, 0.5, 2),
+  //    new AutoBalanceCommand(drive),
+  //    new DriveBackwardDistance(drive, 0.5, 48),
+  //    new DriveForwardDistance(drive ,0.8, 48),
+  //    new AutoBalanceCommand(drive)
+  //   );
+  // }
 
   private Command DumpAndJumpOnTheBalance() {
     return new SequentialCommandGroup(
       new OuttakeCommand(intake).withTimeout(0.8),
       Commands.run(() -> intake.neutral(), intake).withTimeout(0.2 * TIME_SCALE),
-      new DriveBackwardDistance(drive, 0.8, 48), //TODO: refine Distance
-	  //new DriveForwardDistance(drive, 0.5, 2),
-     new AutoBalanceCommand(drive),
-     new DriveBackwardDistance(drive, 0.5, 48),
-     new DriveForwardDistance(drive ,0.8, 48),
-     new AutoBalanceCommand(drive)
+      new DriveBackwardDistance(drive, 0.90, 55), //TODO: refine Distance
+      BasicAutoBalance()
+    );
+  }
+
+  private Command Taxi_Auto() {
+    return new SequentialCommandGroup(
+      new OuttakeCommand(intake).withTimeout(0.8),
+      Commands.run(() -> intake.neutral(), intake).withTimeout(0.2),
+      new DriveBackwardDistance(drive, 0.90, 100)
     );
   }
 
@@ -256,44 +278,52 @@ public class RobotContainer {
     );
   }
 
-  private Command twoCubeScore_Blue(Intake intake, Drive drive){
+  private Command basic_two_cube_auto() {
+    return new SequentialCommandGroup(
+      Commands.run(() -> intake.backward(), intake).withTimeout(0.5),
+      Commands.run(() -> intake.neutral(), intake).withTimeout(0.1),
+      new DriveBackwardDistance(drive, 0.6, 165),
+      new NavXTurn(drive, (-20)),
+      new DriveBackwardDistance(drive, 0.6, 6),
+      new NavXTurn(drive, -150),
+      new DriveForwardDistance(drive, 0.6, 15, intake)
+    );
+  }
+
+  private Command generic_auto(Intake intake, Drive drive){
 
     // Score two cube on blue
     Command twoCubeScore_Blue = new SequentialCommandGroup(
         // START SPIT
-        Commands.run(() -> intake.backward(), intake).withTimeout(0.5 * TIME_SCALE),
-        Commands.run(() -> intake.neutral(), intake).withTimeout(0.2 * TIME_SCALE),
+        Commands.run(() -> intake.backward(), intake).withTimeout(0.8 * TIME_SCALE),
+        Commands.run(() -> intake.neutral(), intake).withTimeout(0.1 * TIME_SCALE),
 
-        // MOVE STRAIGHT
-        Commands.run(() -> drive.customDrive(0, BACKWARDS * 0.4), drive).withTimeout(.25 * TIME_SCALE),
-        Commands.run(() -> drive.customDrive(RIGHT * 0.13, BACKWARDS * SPEED), drive).withTimeout(1.75 * TIME_SCALE),
+        //MOVE BACKWARDS
+        new DriveBackwardDistance(drive, SPEED, 100),
 
-        // SWERVE
-        Commands.run(() -> drive.customDrive(LEFT * .7, BACKWARDS * TURNSPEED)).withTimeout(0.78 * TIME_SCALE),
+        //ROTATE
+        new NavXTurn(drive, 180),
 
-        // INTAKE ON
-        new InstantCommand(() -> intake.forward(), intake),
+        //INTAKE AND DRIVE FORWARD
+        // new ParallelCommandGroup(
+        //   Commands.run(() -> intake.backward(), intake).withTimeout(0.8 * TIME_SCALE),
+        //   new DriveForwardDistance(drive, SPEED, 100)
+        // ),
+        new DriveForwardDistance(drive, SPEED, 100, intake),
 
-        // GO TO BALL
-        Commands.run(() -> drive.customDrive(0, FORWARDS * SPEED), drive).withTimeout(0.65 * TIME_SCALE),
-        Commands.run(() -> intake.forward(), intake).withTimeout(0.3 * TIME_SCALE),
+        //STOP INTAKE
+        Commands.run(() -> intake.neutral(), intake).withTimeout(0.1 * TIME_SCALE),
 
-        //stop intake
-        new InstantCommand(() -> intake.neutral(), intake),
+        //ROTATE
+        new NavXTurn(drive, 180),
 
-        // REVERSE
-        Commands.run(() -> drive.customDrive(0, BACKWARDS * SPEED), drive).withTimeout(.6 * TIME_SCALE),
+        //MOVE FORWARD
+        new DriveBackwardDistance(drive, SPEED, 200),
 
-        Commands.run(() -> drive.customDrive(LEFT * .6, STRAIGHT), drive).withTimeout(.6 * TIME_SCALE),
+        // START SPIT
+        Commands.run(() -> intake.backward(), intake).withTimeout(0.8 * TIME_SCALE),
+        Commands.run(() -> intake.neutral(), intake).withTimeout(0.1 * TIME_SCALE)
 
-        // Drive To Goal
-        Commands.run(() -> drive.customDrive(LEFT * 0.25, FORWARDS * SPEED), drive).withTimeout(1.40 * TIME_SCALE),
-        Commands.run(() -> drive.customDrive(0, FORWARDS * SPEED), drive).withTimeout(0.88 * TIME_SCALE),
-        
-        // Spit
-
-        Commands.run(() -> intake.backward(), intake).withTimeout(0.5 * TIME_SCALE),
-        Commands.run(() -> intake.neutral(), intake)
     );
     return twoCubeScore_Blue;
   }

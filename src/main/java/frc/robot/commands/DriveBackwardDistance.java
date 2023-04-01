@@ -41,8 +41,8 @@ public class DriveBackwardDistance extends CommandBase {
   public void execute() {
     System.out.println("Executing backward...");
     double angle_error = start_angle - drive.getYaw();
-    double l1 = Math.min(_speed + angle_error * Constants.MachineConstants.straightCorrectionCoeff, 0.98);
-    double l2 = Math.min(_speed - angle_error * Constants.MachineConstants.straightCorrectionCoeff, 0.98);
+    double l1 = Math.min(_speed - angle_error * Constants.MachineConstants.straightCorrectionCoeff, 0.98);
+    double l2 = Math.min(_speed + angle_error * Constants.MachineConstants.straightCorrectionCoeff, 0.98);
 
     drive.tankDrive(-l1, -l2);
   }
