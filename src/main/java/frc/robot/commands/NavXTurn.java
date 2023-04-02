@@ -9,8 +9,8 @@ public class NavXTurn extends CommandBase {
 	private double _angle;
 	private double current_angle;
 	private double ERROR = 2.0; // 2 degrees 
-	private double NORMAL_TURN_SPEED = 0.5;
-	private double MIN_TURN_SPEED = 0.25;
+	private double NORMAL_TURN_SPEED = 0.55;
+	private double MIN_TURN_SPEED = 0.35;
 
 	/**
 	 * Positive angle is a left turn, negative angle is a right turn
