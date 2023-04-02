@@ -35,7 +35,7 @@ public class Intake extends SubsystemBase {
     motor.set(0);
   }
   public void forward() {
-    motor.set(0.35);
+    motor.set(0.6);
   }
   public void backward() {
     motor.set(-0.25);

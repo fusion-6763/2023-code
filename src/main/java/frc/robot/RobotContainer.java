@@ -7,13 +7,10 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AutoBalanceCommand;
 import frc.robot.commands.DriveBackwardDistance;
-import frc.robot.commands.DriveForward;
 import frc.robot.commands.DriveForwardDistance;
 import frc.robot.commands.NavXTurn;
 import frc.robot.commands.OuttakeCommand;
 import frc.robot.commands.Sit;
-//import frc.robot.commands.Autos;
-//import frc.robot.commands.DriveForward;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Vision;
@@ -22,16 +19,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.swing.JSlider;
-import javax.swing.plaf.basic.BasicComboBoxUI.FocusHandler;
-
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.auto.RamseteAutoBuilder;
-import com.pathplanner.lib.auto.SwerveAutoBuilder;
-import com.pathplanner.lib.commands.PPMecanumControllerCommand;
-import com.pathplanner.lib.commands.PPRamseteCommand;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
@@ -47,24 +38,16 @@ import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.math.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.Ultrasonic;
-import edu.wpi.first.wpilibj.event.EventLoop;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.simulation.JoystickSim;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandGroupBase;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 
 /**
@@ -199,14 +182,11 @@ public class RobotContainer {
     autoChooser.setDefaultOption("two Cube Score Red", twoCubeScore_Red(intake, drive));
      //adds options in drop down in the shuffleboard
     autoChooser.addOption("Do NOTHING", null);
-    autoChooser.addOption("generic", generic_auto(intake, drive));
-    autoChooser.addOption("2 cube basic auto", basic_two_cube_auto());
+    autoChooser.addOption("Drop, Snag Another, Return", snag_and_180(intake, drive));
+    autoChooser.addOption("2 cube basic auto - left", basic_two_cube_auto(false));
+    autoChooser.addOption("2 cube basic auto - right", basic_two_cube_auto(true));
     autoChooser.addOption("Taxi", Taxi_Auto());
-    //autoChooser.addOption("Small BACKWARD", KnownDistanceForward(drive));
-    //autoChooser.addOption("AutoBalance",new AutoBalanceCommand(drive));
-    //autoChooser.addOption("BasicAutoBalance", BasicAutoBalance());
     autoChooser.addOption("DumpAndJumpOnTheBalance", DumpAndJumpOnTheBalance());
-    //autoChooser.addOption("Turn90", new NavXTurn(drive, 90));
     // Places a dropdown in the shuffleboard NOT in the SmartBoard.
     SmartDashboard.putData("Auto modes", autoChooser);
     // }
@@ -227,22 +207,9 @@ public class RobotContainer {
     camera = CameraServer.startAutomaticCapture();
   }
 
-  // private Command DumpAndJumpOnTheBalance() {
-  //   return new SequentialCommandGroup(
-  //     new OuttakeCommand(intake).withTimeout(0.8),
-  //     Commands.run(() -> intake.neutral(), intake).withTimeout(0.2 * TIME_SCALE),
-  //     new DriveBackwardDistance(drive, 0.8, 48), //TODO: refine Distance
-	//   //new DriveForwardDistance(drive, 0.5, 2),
-  //    new AutoBalanceCommand(drive),
-  //    new DriveBackwardDistance(drive, 0.5, 48),
-  //    new DriveForwardDistance(drive ,0.8, 48),
-  //    new AutoBalanceCommand(drive)
-  //   );
-  // }
-
   private Command DumpAndJumpOnTheBalance() {
     return new SequentialCommandGroup(
-      new OuttakeCommand(intake).withTimeout(0.8),
+      new OuttakeCommand(intake).withTimeout(0.5),
       Commands.run(() -> intake.neutral(), intake).withTimeout(0.2 * TIME_SCALE),
       new DriveBackwardDistance(drive, 0.90, 55), //TODO: refine Distance
       BasicAutoBalance()
@@ -267,36 +234,31 @@ public class RobotContainer {
     );
   }
 
-  private Command KnownDistanceForward(Drive d) {
+  private Command basic_two_cube_auto(boolean turning_right) {
+	// clockwise / right turns are positive
+	// left turns are negative I guess?
+	double rotation_direction = turning_right ? 1 : -1;
+
     return new SequentialCommandGroup(
-      new DriveBackwardDistance(d, 0.3, 12)
-      //encoder = 1
-      //1: 3 3/8 in
-      //5: 12 1/2 in
-      //10: 23 5/8 in
-      //20: 46 1/2 in
+      Commands.run(() -> intake.backward(), intake).withTimeout(0.3),
+      new DriveBackwardDistance(drive, 0.9, 165),
+      new NavXTurn(drive, rotation_direction * 20),
+      new DriveBackwardDistance(drive, 0.9, 6),
+      new NavXTurn(drive, rotation_direction * 150),
+      new DriveForwardDistance(drive, 0.9, 15, intake),
+	  // comment the remaining out, and build up to it
+	  new NavXTurn(drive, 180),
+	  new DriveForwardDistance(drive, 0.9, 179),
+	  Commands.run(() -> intake.backward(), intake).withTimeout(0.3)
     );
   }
 
-  private Command basic_two_cube_auto() {
-    return new SequentialCommandGroup(
-      Commands.run(() -> intake.backward(), intake).withTimeout(0.5),
-      Commands.run(() -> intake.neutral(), intake).withTimeout(0.1),
-      new DriveBackwardDistance(drive, 0.6, 165),
-      new NavXTurn(drive, (-20)),
-      new DriveBackwardDistance(drive, 0.6, 6),
-      new NavXTurn(drive, -150),
-      new DriveForwardDistance(drive, 0.6, 15, intake)
-    );
-  }
-
-  private Command generic_auto(Intake intake, Drive drive){
-
+  private Command snag_and_180(Intake intake, Drive drive){
     // Score two cube on blue
-    Command twoCubeScore_Blue = new SequentialCommandGroup(
+    return new SequentialCommandGroup(
         // START SPIT
-        Commands.run(() -> intake.backward(), intake).withTimeout(0.8 * TIME_SCALE),
-        Commands.run(() -> intake.neutral(), intake).withTimeout(0.1 * TIME_SCALE),
+        Commands.run(() -> intake.backward(), intake).withTimeout(0.4),
+        Commands.run(() -> intake.neutral(), intake).withTimeout(0.05), // probably not required?
 
         //MOVE BACKWARDS
         new DriveBackwardDistance(drive, SPEED, 100),
@@ -305,14 +267,7 @@ public class RobotContainer {
         new NavXTurn(drive, 180),
 
         //INTAKE AND DRIVE FORWARD
-        // new ParallelCommandGroup(
-        //   Commands.run(() -> intake.backward(), intake).withTimeout(0.8 * TIME_SCALE),
-        //   new DriveForwardDistance(drive, SPEED, 100)
-        // ),
         new DriveForwardDistance(drive, SPEED, 100, intake),
-
-        //STOP INTAKE
-        Commands.run(() -> intake.neutral(), intake).withTimeout(0.1 * TIME_SCALE),
 
         //ROTATE
         new NavXTurn(drive, 180),
@@ -321,11 +276,9 @@ public class RobotContainer {
         new DriveBackwardDistance(drive, SPEED, 200),
 
         // START SPIT
-        Commands.run(() -> intake.backward(), intake).withTimeout(0.8 * TIME_SCALE),
-        Commands.run(() -> intake.neutral(), intake).withTimeout(0.1 * TIME_SCALE)
-
+        Commands.run(() -> intake.backward(), intake).withTimeout(0.4),
+        Commands.run(() -> intake.neutral(), intake).withTimeout(0.05) // also probably not required?
     );
-    return twoCubeScore_Blue;
   }
   
   private Command twoCubeScore_Red(Intake intake, Drive drive) {
@@ -422,43 +375,9 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-
     drive.resetOdometry(exampleTrajectory.getInitialPose());
-    //return fullAuto;
-
-    
-
     return autoChooser.getSelected();
   }
-
-  // return new SequentialCommandGroup(new InstantCommand(()-> {
-  // drive.resetOdometry(examplePath.getInitialPose());
-  // }),
-  // new PPMecanumControllerCommand(
-  // examplePath,
-  // drive::getPose,
-  // drive.mecanumDriveKinematics,
-  // new PIDController(0,0,0),
-  // new PIDController(0,0,0),
-  // new PIDController(0,0,0),
-  // 1.5,
-  // drive::getMechanumWheelSpeeds,
-  // true,
-  // drive
-  // )
-  // );
-  // RamseteController rController = new RamseteController();
-  // RamseteAutoBuilder ramseteCommand =
-  // new RamseteAutoBuilder( drive::getPose,
-  // drive::resetOdometry,
-  // rController,
-  // drive.kDriveKinematics,
-  // drive::tankDriveVolts,
-  // eventMap,
-  // drive);
-  // return ramseteCommand.fullAuto(examplePath); //
-  // Autos.exampleAuto(m_exampleSubsystem);
-  // }
 
   public void teleopInit() {
 

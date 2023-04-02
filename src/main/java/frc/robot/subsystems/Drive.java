@@ -42,13 +42,6 @@ public class Drive extends SubsystemBase {
         new DifferentialDriveKinematics(0.63); // measured 63 cm from middle to middle
   private static final double kMaxSpeedMetersPerSecond = 1;
   private static final double kMaxAccelMetersPerSecond = 1;
-  // public final MecanumDriveKinematics mecanumDriveKinematics =
-  //       new MecanumDriveKinematics(
-  //         new Translation2d(0, 0.2921), // 12.5" is .2921m
-  //         new Translation2d(0, -0.2921),
-  //         new Translation2d(0, 0.2921),
-  //         new Translation2d(0, -0.2921)
-  //       );
   
   public Drive() {
     leftGroup.setInverted(false);
@@ -57,10 +50,6 @@ public class Drive extends SubsystemBase {
     encoderLeft.setPositionConversionFactor(2.3);
     encoderRight.setPositionConversionFactor(2.3);
     
-    // encoderLeft.setPositionConversionFactor(1/10.71);
-    // encoderRight.setPositionConversionFactor(1/10.71);
-    
-    // rightGroup.setInverted(true);
     //differentialDrive.setSafetyEnabled(false);
     // this.setDefaultCommand(Commands.run(
     //   () ->
@@ -129,7 +118,6 @@ public class Drive extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     m_odometry.update(ahrs.getRotation2d(), encoderLeft.getPosition(), encoderRight.getPosition());
-    //SmartDashboard.putData("Auto modes", autoChooser);
   }
 
   @Override
@@ -155,11 +143,6 @@ public class Drive extends SubsystemBase {
     return new DifferentialDriveWheelSpeeds(encoderLeft.getVelocity(), encoderRight.getVelocity());
   }
 
-  // public MecanumDriveWheelSpeeds getMechanumWheelSpeeds() {
-  //   return new MecanumDriveWheelSpeeds(encoderLeft.getVelocity(), encoderRight.getVelocity(),
-  //                                       encoderLeft.getVelocity(), encoderRight.getVelocity());
-  // }
-
   /**
    * Resets the odometry to the specified pose.
    *
@@ -180,15 +163,6 @@ public class Drive extends SubsystemBase {
   public void tankDriveVolts(double leftVolts, double rightVolts) {
     leftGroup.setVoltage(leftVolts/3);
     rightGroup.setVoltage(rightVolts/3);
-    //System.out.println("" + leftVolts + " " + rightVolts);
-    //rightGroup.setVoltage(-leftVolts);
-    //leftGroup.setVoltage(-rightVolts);
     differentialDrive.feed();
   }
-
-  //public void straightRampUpDrive(double slowTime, double fastTime){
-  ////  double BACKWARDS = 1.0;
- //   customDrive(0, BACKWARDS * 0.4), drive).withTimeout(slowTime);
-  //  customDrive(0, BACKWARDS * 0.4), drive).withTimeout(fastTime);
- // }
 }

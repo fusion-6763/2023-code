@@ -9,8 +9,13 @@ public class NavXTurn extends CommandBase {
 	private double _angle;
 	private double current_angle;
 	private double ERROR = 2.0; // 2 degrees 
-	private double NORMAL_TURN_SPEED = 0.55;
-	private double MIN_TURN_SPEED = 0.35;
+	private double NORMAL_TURN_SPEED = 0.75;
+
+	private double MID_TURN_SPEED = 0.5;
+	private double MIDDLE_TURN_ANGLE = 30;
+
+	private double SLOW_TURN_SPEED = 0.35;
+	private double SLOW_TURN_ANGLE = 15;
 
 	/**
 	 * Positive angle is a left turn, negative angle is a right turn
@@ -34,7 +39,8 @@ public class NavXTurn extends CommandBase {
 
 		double angle_diff = current_angle - _angle;
 		// if we're within 15 degrees, then slow us down a bit
-		double turning_speed = (Math.abs(angle_diff) < 30) ? MIN_TURN_SPEED : NORMAL_TURN_SPEED;
+		double turning_speed = (Math.abs(angle_diff) < MIDDLE_TURN_ANGLE) ? MID_TURN_SPEED : NORMAL_TURN_SPEED;
+		turning_speed 		 = (Math.abs(angle_diff) < SLOW_TURN_ANGLE) ? SLOW_TURN_SPEED : NORMAL_TURN_SPEED;
 		if( angle_diff < 0 ) {
 			m_DriveSubsystem.tankDrive(turning_speed, -turning_speed);
 		} else {

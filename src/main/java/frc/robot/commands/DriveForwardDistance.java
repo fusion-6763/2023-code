@@ -16,9 +16,13 @@ public class DriveForwardDistance extends CommandBase {
   private double _speed;
   private double _distance;
   private double start_angle;
+  private boolean scale_speed; // defaults to TRUE
+
+  private final double MIN_SPEED = 0.3;
 
   /**
    * Creates a new ExampleCommand.
+   * The speed must be greater than 0.3, and the distance should probably be something greater than 4.
    *
    * @param subsystem The subsystem used by this command.
    */
@@ -27,6 +31,7 @@ public class DriveForwardDistance extends CommandBase {
     _speed = speed;
     _distance = distance;
     _intake = null;
+	scale_speed = true;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(drive);
   }
@@ -36,7 +41,13 @@ public class DriveForwardDistance extends CommandBase {
     _speed = speed;
     _distance = distance;
     _intake = intake;
+	scale_speed = true;
     addRequirements(drive, _intake);
+  }
+
+  public DriveForwardDistance setSpeedScaling(boolean to_scale) {
+	scale_speed = to_scale;
+	return this;
   }
 
   // Called when the command is initially scheduled.
@@ -50,11 +61,30 @@ public class DriveForwardDistance extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    //System.out.println("Executing forward...");
     if (_intake != null) _intake.backward();
+
+	double effective_speed = _speed;
+	// linear scaling based on encoder distance
+	// this actually leads to exponential acceleration over the distance
+	// since the faster speed leads to a faster distance delta
+	if (scale_speed) {
+		// this is vaguely what we're doing
+		// https://www.desmos.com/calculator/8qx3tvsnd3
+		double upscale_distance = 4; // we scale up over 4 inches
+		double slowdown_distance = 3; // we slow down over 3 inches
+		double current_distance = drive.getLeftEncoder().getPosition();
+
+		double start_scaling = MIN_SPEED + (_speed-MIN_SPEED) * Math.min(current_distance / upscale_distance, 1.0);
+		// the way this works, is we add the slowdown distance to the current distance, anything that hangs "over" the end we shove into the scaling
+		// so for most of the range we are under 0, but once we reach the last slowdown_distance of units, start to reduce the speed
+		double end_scaling = _speed - (_speed-MIN_SPEED) * Math.max((current_distance + slowdown_distance - _distance)/slowdown_distance, 0.0);
+
+		effective_speed = Math.min(start_scaling, end_scaling);
+	}
+
     double angle_error = start_angle - drive.getYaw();
-    double l1 = Math.min(_speed + angle_error * Constants.MachineConstants.straightCorrectionCoeff, 0.98);
-    double l2 = Math.min(_speed - angle_error * Constants.MachineConstants.straightCorrectionCoeff, 0.98);
+    double l1 = Math.min(effective_speed + angle_error * Constants.MachineConstants.straightCorrectionCoeff, 0.98);
+    double l2 = Math.min(effective_speed - angle_error * Constants.MachineConstants.straightCorrectionCoeff, 0.98);
 
     drive.tankDrive(l1, l2);
   }
