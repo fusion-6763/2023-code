@@ -31,7 +31,7 @@ public class DriveForwardDistance extends CommandBase {
     _speed = speed;
     _distance = distance;
     _intake = null;
-	scale_speed = true;
+	scale_speed = false;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(drive);
   }
@@ -81,6 +81,7 @@ public class DriveForwardDistance extends CommandBase {
 
 		effective_speed = Math.min(start_scaling, end_scaling);
 	}
+  System.out.println("Driving Forwards at " + effective_speed);
 
     double angle_error = start_angle - drive.getYaw();
     double l1 = Math.min(effective_speed + angle_error * Constants.MachineConstants.straightCorrectionCoeff, 0.98);

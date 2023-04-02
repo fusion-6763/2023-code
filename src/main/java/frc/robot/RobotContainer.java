@@ -220,7 +220,7 @@ public class RobotContainer {
     return new SequentialCommandGroup(
       new OuttakeCommand(intake).withTimeout(0.8),
       Commands.run(() -> intake.neutral(), intake).withTimeout(0.2),
-      new DriveBackwardDistance(drive, 0.90, 100)
+      new DriveBackwardDistance(drive, 0.75, 100)
     );
   }
 
@@ -241,15 +241,20 @@ public class RobotContainer {
 
     return new SequentialCommandGroup(
       Commands.run(() -> intake.backward(), intake).withTimeout(0.3),
-      new DriveBackwardDistance(drive, 0.9, 165),
-      new NavXTurn(drive, rotation_direction * 20),
-      new DriveBackwardDistance(drive, 0.9, 6),
-      new NavXTurn(drive, rotation_direction * 150),
-      new DriveForwardDistance(drive, 0.9, 15, intake),
+      Commands.run(() -> intake.neutral(), intake).withTimeout(0.05),
+      new DriveBackwardDistance(drive, 0.4, 30),
+      new DriveBackwardDistance(drive, 0.6, 30),
+      new DriveBackwardDistance(drive, 0.8, 60),
+      new DriveBackwardDistance(drive, 0.5, 20),
+      new DriveBackwardDistance(drive, 0.35, 20),
+      //new NavXTurn(drive, rotation_direction * 20),
+      //new DriveBackwardDistance(drive, 0.45, 2),
+      new NavXTurn(drive, rotation_direction * 170),
+      new DriveForwardDistance(drive, 0.5,35, intake)
 	  // comment the remaining out, and build up to it
-	  new NavXTurn(drive, 180),
-	  new DriveForwardDistance(drive, 0.9, 179),
-	  Commands.run(() -> intake.backward(), intake).withTimeout(0.3)
+	  //new NavXTurn(drive, 180),
+	  //new DriveForwardDistance(drive, 0.9, 179),
+	  //Commands.run(() -> intake.backward(), intake).withTimeout(0.3)
     );
   }
 
