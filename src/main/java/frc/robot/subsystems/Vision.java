@@ -1,9 +1,6 @@
 package frc.robot.subsystems;
 
 import org.opencv.core.Mat;
-import org.opencv.core.Point;
-import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.CvSink;
@@ -21,13 +18,13 @@ public class Vision extends SubsystemBase {
 				// Get the UsbCamera from CameraServer
 				UsbCamera camera = CameraServer.startAutomaticCapture();
 				// Set the resolution
-				camera.setResolution(640, 480);
+				camera.setResolution(320, 240);
 
 				// Get a CvSink. This will capture Mats from the camera
 				CvSink cvSink = CameraServer.getVideo();
 				// Setup a CvSource. This will send images back to the Dashboard
-				CvSource outputStream = CameraServer.putVideo("Regular", 640, 480);
-				CvSource purpleStream = CameraServer.putVideo("Purple", 640, 480);
+				//CvSource outputStream = CameraServer.putVideo("Regular", 640, 480);
+				CvSource purpleStream = CameraServer.putVideo("Purple", 320, 240);
 
 				// Mats are very memory expensive. Lets reuse this Mat.
 				Mat mat = new Mat();
@@ -41,19 +38,24 @@ public class Vision extends SubsystemBase {
 					// in the source mat.  If there is an error notify the output.
 					if (cvSink.grabFrame(mat) == 0) {
 						// Send the output the error.
-						outputStream.notifyError(cvSink.getError());
+						//outputStream.notifyError(cvSink.getError());
 						// skip the rest of the current iteration
 						continue;
 					}
 					for(int r = 0; r < mat.rows(); r++) {
-						for(int c = 0; c < mat.rows(); c += 1) {
-							var res = transformImage(mat.get(r, c));
+						for(int c = 0; c < mat.rows(); c++) {
+							double[] res;
+							if (r == 0 && c == 0) {
+								res = transformImage(mat.get(r, c), true);
+								System.out.println("(" + r + ", " + c + ") = [" + res[0] + ", " + res[1] + ", " + res[2] + "]");
+							} else {
+								res = transformImage(mat.get(r, c), false);
+							}
 							purp_image.put(r, c, res);
 						}
 					}
 
 					// Give the output stream a new image to display
-					outputStream.putFrame(mat);
 					purpleStream.putFrame(purp_image);
 				}
 			}
@@ -106,7 +108,7 @@ public class Vision extends SubsystemBase {
 		return sum;
 	}
 
-	private static double[] transformImage(double[] inp) {
+	private static double[] transformImage(double[] inp, boolean debug) {
 		var sim_vector = Constants.VisionConstants.purpleVector;
 		// calculate our new color here
 		normalize(inp);
