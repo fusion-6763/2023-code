@@ -27,7 +27,7 @@ public class DriveBackwardDistance extends CommandBase {
     drive = _drive;
     _speed = speed;
     _distance = distance;
-	scale_speed = false;
+	scale_speed = true;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(drive);
   }
@@ -55,9 +55,9 @@ public class DriveBackwardDistance extends CommandBase {
 	if (scale_speed) {
 		// this is vaguely what we're doing
 		// https://www.desmos.com/calculator/8qx3tvsnd3
-		double upscale_distance = 4; // we scale up over 4 inches
-		double slowdown_distance = 3; // we slow down over 3 inches
-		double current_distance = drive.getLeftEncoder().getPosition();
+		double upscale_distance = 15; // we scale up over 4 inches
+		double slowdown_distance = 15; // we slow down over 3 inches
+		double current_distance = Math.abs(drive.getLeftEncoder().getPosition());
 
 		double start_scaling = MIN_SPEED + (_speed-MIN_SPEED) * Math.min(current_distance / upscale_distance, 1.0);
 		// the way this works, is we add the slowdown distance to the current distance, anything that hangs "over" the end we shove into the scaling

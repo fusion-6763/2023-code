@@ -218,8 +218,8 @@ public class RobotContainer {
 
   private Command Taxi_Auto() {
     return new SequentialCommandGroup(
-      new OuttakeCommand(intake).withTimeout(0.8),
-      Commands.run(() -> intake.neutral(), intake).withTimeout(0.2),
+      new OuttakeCommand(intake).withTimeout(0.5),
+      Commands.run(() -> intake.neutral(), intake).withTimeout(0.1),
       new DriveBackwardDistance(drive, 0.75, 100)
     );
   }
@@ -242,20 +242,23 @@ public class RobotContainer {
     return new SequentialCommandGroup(
       Commands.run(() -> intake.backward(), intake).withTimeout(0.3),
       Commands.run(() -> intake.neutral(), intake).withTimeout(0.05),
-      new DriveBackwardDistance(drive, 0.4, 30),
-      new DriveBackwardDistance(drive, 0.6, 30),
-      new DriveBackwardDistance(drive, 0.8, 60),
-      new DriveBackwardDistance(drive, 0.5, 20),
-      new DriveBackwardDistance(drive, 0.35, 20),
-      //new NavXTurn(drive, rotation_direction * 20),
-      //new DriveBackwardDistance(drive, 0.45, 2),
+      new DriveBackwardDistance(drive, 0.8, 160),
+      new Sit(drive).withTimeout(0.2),
+      
       new NavXTurn(drive, rotation_direction * 170),
-      new DriveForwardDistance(drive, 0.5,35, intake)
-	  // comment the remaining out, and build up to it
-	  //new NavXTurn(drive, 180),
-	  //new DriveForwardDistance(drive, 0.9, 179),
-	  //Commands.run(() -> intake.backward(), intake).withTimeout(0.3)
-    );
+      new Sit(drive).withTimeout(0.2),
+
+      new DriveForwardDistance(drive, 0.6,35, intake).setSpeedScaling(true),
+      Commands.run(() -> intake.neutral(), intake).withTimeout(0.1), // intake wasn't turning off
+      Commands.run(()-> intake.forward(), intake).withTimeout(0.2), // to deploy
+      new Sit(drive).withTimeout(0.2)
+      //new NavXTurn(drive, -rotation_direction * 170),
+      //new Sit(drive).withTimeout(0.2),
+      // comment the remaining out, and build up to it
+      //new DriveForwardDistance(drive, 0.8, 179)
+      //Commands.run(() -> intake.backward(), intake).withTimeout(0.4)
+      //Commands.run(() -> intake.neutral(), intake).withTimeout(0.1)
+      );
   }
 
   private Command snag_and_180(Intake intake, Drive drive){

@@ -31,7 +31,7 @@ public class DriveForwardDistance extends CommandBase {
     _speed = speed;
     _distance = distance;
     _intake = null;
-	scale_speed = false;
+	scale_speed = true;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(drive);
   }
@@ -72,7 +72,7 @@ public class DriveForwardDistance extends CommandBase {
 		// https://www.desmos.com/calculator/8qx3tvsnd3
 		double upscale_distance = 4; // we scale up over 4 inches
 		double slowdown_distance = 3; // we slow down over 3 inches
-		double current_distance = drive.getLeftEncoder().getPosition();
+		double current_distance = Math.abs(drive.getLeftEncoder().getPosition());
 
 		double start_scaling = MIN_SPEED + (_speed-MIN_SPEED) * Math.min(current_distance / upscale_distance, 1.0);
 		// the way this works, is we add the slowdown distance to the current distance, anything that hangs "over" the end we shove into the scaling
@@ -92,7 +92,11 @@ public class DriveForwardDistance extends CommandBase {
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    if (_intake != null){
+      _intake.neutral();
+    }
+  }
 
   // Returns true when the command should end.
   @Override
