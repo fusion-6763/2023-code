@@ -28,4 +28,8 @@ public final class Constants {
 	  public static final double[] purpleVector = {0.701, 0.1, 1.0};
 	  public static final double colorSimilarityThreshold = 0.8;
   }
+  public static class AutoConstants {
+    public static final double driveDistanceUpscaleInches = 15;
+    public static final double driveDistanceSlowdownInches = 15;
+  }
 }

@@ -8,6 +8,7 @@ import frc.robot.Constants;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.Intake;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants.AutoConstants;
 
 /** An example command that uses an example subsystem. */
 public class DriveForwardDistance extends CommandBase {
@@ -61,7 +62,7 @@ public class DriveForwardDistance extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (_intake != null) _intake.forward();
+    if (_intake != null) _intake.intakeCube();
 
 	double effective_speed = _speed;
 	// linear scaling based on encoder distance
@@ -70,8 +71,8 @@ public class DriveForwardDistance extends CommandBase {
 	if (scale_speed) {
 		// this is vaguely what we're doing
 		// https://www.desmos.com/calculator/8qx3tvsnd3
-		double upscale_distance = 4; // we scale up over 4 inches
-		double slowdown_distance = 3; // we slow down over 3 inches
+		double upscale_distance = Constants.AutoConstants.driveDistanceUpscaleInches; // we scale up over 4 inches
+		double slowdown_distance = Constants.AutoConstants.driveDistanceSlowdownInches; // we slow down over 3 inches
 		double current_distance = Math.abs(drive.getLeftEncoder().getPosition());
 
 		double start_scaling = MIN_SPEED + (_speed-MIN_SPEED) * Math.min(current_distance / upscale_distance, 1.0);

@@ -137,21 +137,6 @@ public class RobotContainer {
      drive
    );
 
-   ArrayList<PathPlannerTrajectory> pathGroup = (ArrayList<PathPlannerTrajectory>) PathPlanner.loadPathGroup("Basic", new PathConstraints(1, 1));
-   HashMap<String, Command> eventMap = new HashMap<>();
-
-   RamseteAutoBuilder autoBuilder = new RamseteAutoBuilder(
-    drive::getPose, 
-    drive::resetOdometry, 
-    new RamseteController(), 
-    kDriveKinematics, 
-    drive::tankDriveVolts, 
-    eventMap, 
-    drive);
-  Command fullAuto = autoBuilder.fullAuto(pathGroup);
-
-  
-
   private final SendableChooser<Command> autoChooser = new SendableChooser<Command>();
 
     double FORWARDS = 1.0;
@@ -186,6 +171,7 @@ public class RobotContainer {
     autoChooser.addOption("2 cube basic auto - left", basic_two_cube_auto(false));
     autoChooser.addOption("2 cube basic auto - right", basic_two_cube_auto(true));
     autoChooser.addOption("Taxi", Taxi_Auto());
+    autoChooser.addOption("Just Spit", Just_Spit());
     autoChooser.addOption("DumpAndJumpOnTheBalance", DumpAndJumpOnTheBalance());
     // Places a dropdown in the shuffleboard NOT in the SmartBoard.
     SmartDashboard.putData("Auto modes", autoChooser);
@@ -218,6 +204,14 @@ public class RobotContainer {
 
   private Command Taxi_Auto() {
     return new SequentialCommandGroup(
+      new OuttakeCommand(intake).withTimeout(0.5),
+      Commands.run(() -> intake.neutral(), intake).withTimeout(0.1),
+      new DriveBackwardDistance(drive, 0.75, 100)
+    );
+  }
+
+  private Command Just_Spit() {
+    return new SequentialCommandGroup(
       new OuttakeCommand(intake).withTimeout(0.5)
      // Commands.run(() -> intake.neutral(), intake).withTimeout(0.1),
     //  new DriveBackwardDistance(drive, 0.75, 100)
@@ -240,7 +234,7 @@ public class RobotContainer {
 	double rotation_direction = turning_right ? 1 : -1;
 
     return new SequentialCommandGroup(
-      Commands.run(() -> intake.backward(), intake).withTimeout(0.3),
+      Commands.run(() -> intake.outtakeCube(), intake).withTimeout(0.3),
       Commands.run(() -> intake.neutral(), intake).withTimeout(0.05),
       new DriveBackwardDistance(drive, 0.8, 160),
       new Sit(drive).withTimeout(0.2),
@@ -250,7 +244,7 @@ public class RobotContainer {
 
       new DriveForwardDistance(drive, 0.6,35, intake).setSpeedScaling(true),
       Commands.run(() -> intake.neutral(), intake).withTimeout(0.1), // intake wasn't turning off
-      Commands.run(()-> intake.forward(), intake).withTimeout(0.2), // to deploy
+      Commands.run(()-> intake.intakeCube(), intake).withTimeout(0.2), // to deploy
       new Sit(drive).withTimeout(0.2)
       //new NavXTurn(drive, -rotation_direction * 170),
       //new Sit(drive).withTimeout(0.2),
@@ -265,8 +259,8 @@ public class RobotContainer {
     // Score two cube on blue
     return new SequentialCommandGroup(
         // START SPIT
-        Commands.run(() -> intake.backward(), intake).withTimeout(0.4),
-        Commands.run(() -> intake.neutral(), intake).withTimeout(0.05), // probably not required?
+        new OuttakeCommand(intake).withTimeout(0.4),
+        Commands.run(() -> intake.neutral(), intake).withTimeout(0.05),
 
         //MOVE BACKWARDS
         new DriveBackwardDistance(drive, SPEED, 100),
@@ -284,8 +278,8 @@ public class RobotContainer {
         new DriveBackwardDistance(drive, SPEED, 200),
 
         // START SPIT
-        Commands.run(() -> intake.backward(), intake).withTimeout(0.4),
-        Commands.run(() -> intake.neutral(), intake).withTimeout(0.05) // also probably not required?
+        new OuttakeCommand(intake).withTimeout(0.4),
+        Commands.run(() -> intake.neutral(), intake).withTimeout(0.05)
     );
   }
   
@@ -293,7 +287,7 @@ public class RobotContainer {
 
     Command twoCubeScore_Red = new SequentialCommandGroup(
         // START SPIT
-        Commands.run(() -> intake.backward(), intake).withTimeout(0.8 * TIME_SCALE),
+        new OuttakeCommand(intake).withTimeout(0.8 * TIME_SCALE),
         Commands.run(() -> intake.neutral(), intake).withTimeout(0.1 * TIME_SCALE),
 
         // MOVE STRAIGHT
@@ -303,7 +297,7 @@ public class RobotContainer {
         // SWERVE
         Commands.run(() -> drive.customDrive(LEFT * .8, BACKWARDS * TURNSPEED)).withTimeout(0.55 * TIME_SCALE),
         // INTAKE ON
-        new InstantCommand(() -> intake.forward(), intake),
+        new InstantCommand(() -> intake.intakeCube(), intake),
 
         // GO TO BALL
         Commands.run(() -> drive.customDrive(0, FORWARDS * SPEED), drive).withTimeout(1.03 * TIME_SCALE),
@@ -325,7 +319,7 @@ public class RobotContainer {
         // rmeber to deploy - jo jo
 
         // SPIT
-        Commands.run(() -> intake.backward(), intake).withTimeout(0.5 * TIME_SCALE),
+        new OuttakeCommand(intake).withTimeout(0.5 * TIME_SCALE),
         Commands.run(() -> intake.neutral(), intake)
 
     // MOVE TO CLIMB
@@ -355,26 +349,16 @@ public class RobotContainer {
     // new Trigger(m_exampleSubsystem::exampleCondition)
     // .onTrue(new ExampleCommand(m_exampleSubsystem));
 
-    // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
-    // cancelling on release.
-    //m_driverController.button(5).whileTrue(m_exampleSubsystem.exampleMethodCommand());
-    //m_driverController.button(6).whileTrue(new DriveForward(drive));
-
-    m_driverController.button(5).whileTrue(Commands.run(() -> intake.forward(), intake));
-      
-    //EventLoop el = new EventLoop();
-   // el.bind(() -> Commands.run(() -> intake.forward(), intake));
-    //el.bind(() -> System.out.println("Joystick Press!"));
-    //vroomstick.button(5, el);
-    // TEMP Outtake of right trigger
-    m_driverController.button(6).whileTrue(Commands.run(() -> intake.backward(), intake));
+    m_driverController.button(5).whileTrue(Commands.run(() -> intake.intakeCube(), intake)); //Left bumper
+    m_driverController.button(6).whileTrue(Commands.run(() -> intake.outtakeCube(), intake)); //Right bumper
   //   m_driverController.axisGreaterThan(1, 0.2).whileTrue(Commands.run(() ->
   //   drive.customDrive(m_driverController.getRawAxis(1), m_driverController.getRawAxis(2)), drive
   // ));
 
-  
+  //Both lines below use the left trigger.
+  //Note that thse lines will have no effect if enableDriverBoost is 0.
   m_driverController.button(7).whileTrue(Commands.run(()-> driveSpeed = boostspeed));
-  m_driverController.button(7).whileFalse(Commands.run(()-> driveSpeed = regulerSpeed)); // USING NOB, NOT BUTTON
+  m_driverController.button(7).whileFalse(Commands.run(()-> driveSpeed = regulerSpeed));
   }
 
   /**

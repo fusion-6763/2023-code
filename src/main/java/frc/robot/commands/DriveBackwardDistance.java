@@ -55,8 +55,8 @@ public class DriveBackwardDistance extends CommandBase {
 	if (scale_speed) {
 		// this is vaguely what we're doing
 		// https://www.desmos.com/calculator/8qx3tvsnd3
-		double upscale_distance = 15; // we scale up over 4 inches
-		double slowdown_distance = 15; // we slow down over 3 inches
+		double upscale_distance = Constants.AutoConstants.driveDistanceUpscaleInches; // we scale up over upscale_distance inches
+		double slowdown_distance = Constants.AutoConstants.driveDistanceUpscaleInches; // we slow down over slowdown_distance inches
 		double current_distance = Math.abs(drive.getLeftEncoder().getPosition());
 
 		double start_scaling = MIN_SPEED + (_speed-MIN_SPEED) * Math.min(current_distance / upscale_distance, 1.0);
