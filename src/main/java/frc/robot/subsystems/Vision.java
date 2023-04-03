@@ -30,6 +30,8 @@ public class Vision extends SubsystemBase {
 				Mat mat = new Mat();
 				Mat purp_image = new Mat();
 
+				System.out.println("------------------------- Initialized Camera Server");
+
 				// This cannot be 'true'. The program will never exit if it is. This
 				// lets the robot stop this thread when restarting robot code or
 				// deploying.
@@ -38,7 +40,8 @@ public class Vision extends SubsystemBase {
 					// in the source mat.  If there is an error notify the output.
 					if (cvSink.grabFrame(mat) == 0) {
 						// Send the output the error.
-						//outputStream.notifyError(cvSink.getError());
+						System.out.println("Camera Error!");
+						System.out.println(cvSink.getError());
 						// skip the rest of the current iteration
 						continue;
 					}

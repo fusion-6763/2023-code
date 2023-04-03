@@ -61,7 +61,7 @@ public class DriveForwardDistance extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (_intake != null) _intake.backward();
+    if (_intake != null) _intake.forward();
 
 	double effective_speed = _speed;
 	// linear scaling based on encoder distance

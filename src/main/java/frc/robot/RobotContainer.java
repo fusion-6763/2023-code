@@ -63,7 +63,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final Drive drive = new Drive(); // Robot wheels
   private final Intake intake = new Intake();
-  private final Vision vision = new Vision();
+  //private final Vision vision = new Vision();
   private final PowerDistribution powerDistribution = new PowerDistribution(); // PDP / PDB
   private UsbCamera camera;
 
@@ -218,9 +218,9 @@ public class RobotContainer {
 
   private Command Taxi_Auto() {
     return new SequentialCommandGroup(
-      new OuttakeCommand(intake).withTimeout(0.5),
-      Commands.run(() -> intake.neutral(), intake).withTimeout(0.1),
-      new DriveBackwardDistance(drive, 0.75, 100)
+      new OuttakeCommand(intake).withTimeout(0.5)
+     // Commands.run(() -> intake.neutral(), intake).withTimeout(0.1),
+    //  new DriveBackwardDistance(drive, 0.75, 100)
     );
   }
 
