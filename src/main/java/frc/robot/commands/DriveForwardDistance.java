@@ -56,7 +56,7 @@ public class DriveForwardDistance extends CommandBase {
   public void initialize() {
     start_angle = drive.getYaw();
     drive.resetEncoders();
-    drive.resetEncoders();
+    System.out.println("DriveForwardDist enabled");
   }
 
   // Called every time the scheduler runs while the command is scheduled.

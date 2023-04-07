@@ -16,6 +16,7 @@ import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Drive extends SubsystemBase {
@@ -28,7 +29,7 @@ public class Drive extends SubsystemBase {
 	private static MotorControllerGroup leftGroup = new MotorControllerGroup(motor3, motor4);
   private static DifferentialDrive differentialDrive = new DifferentialDrive(leftGroup, rightGroup);
 
-  private DifferentialDriveOdometry m_odometry;
+  //private DifferentialDriveOdometry m_odometry;
   private final AHRS ahrs = new AHRS(); 
   private RelativeEncoder encoderRight = motor2.getEncoder();
   private RelativeEncoder encoderLeft = motor4.getEncoder();
@@ -56,7 +57,7 @@ public class Drive extends SubsystemBase {
     //   differentialDrive.arcadeDrive(0, 0),
     //   this
     // ));
-    m_odometry = new DifferentialDriveOdometry(ahrs.getRotation2d(), encoderLeft.getPosition(), encoderRight.getPosition());
+    //m_odometry = new DifferentialDriveOdometry(ahrs.getRotation2d(), encoderLeft.getPosition(), encoderRight.getPosition());
   }
 
 	private static Translation2d location = new Translation2d(1.88, 0.34);
@@ -117,7 +118,9 @@ public class Drive extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    m_odometry.update(ahrs.getRotation2d(), encoderLeft.getPosition(), encoderRight.getPosition());
+    //m_odometry.update(ahrs.getRotation2d(), encoderLeft.getPosition(), encoderRight.getPosition());
+    SmartDashboard.putNumber("encoderLeft", encoderLeft.getPosition());
+    SmartDashboard.putNumber("encoderRight", encoderRight.getPosition());
   }
 
   @Override
@@ -131,7 +134,8 @@ public class Drive extends SubsystemBase {
    * @return The pose.
    */
   public Pose2d getPose() {
-    return m_odometry.getPoseMeters();
+    return null;
+    //return m_odometry.getPoseMeters();
   }
 
   /**
@@ -148,14 +152,15 @@ public class Drive extends SubsystemBase {
    *
    * @param pose The pose to which to set the odometry.
    */
-  public void resetOdometry(Pose2d pose) {
-    resetEncoders();
-    m_odometry.resetPosition(
-      ahrs.getRotation2d(), encoderLeft.getPosition(), encoderRight.getPosition(), pose);
-  }
+  // public void resetOdometry(Pose2d pose) {
+  //   resetEncoders();
+  //   m_odometry.resetPosition(
+  //     ahrs.getRotation2d(), encoderLeft.getPosition(), encoderRight.getPosition(), pose);
+  // }
 
   /** Resets the drive encoders to currently read a position of 0. */
   public void resetEncoders() {
+    System.out.println("Encoders reset");
     encoderLeft.setPosition(0);
     encoderRight.setPosition(0);
   }

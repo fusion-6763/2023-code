@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AutoBalanceCommand;
+import frc.robot.commands.AutoBalanceCommandJR;
 import frc.robot.commands.DriveBackwardDistance;
 import frc.robot.commands.DriveForwardDistance;
 import frc.robot.commands.NavXTurn;
@@ -170,9 +171,10 @@ public class RobotContainer {
     autoChooser.addOption("Drop, Snag Another, Return", snag_and_180(intake, drive));
     autoChooser.addOption("2 cube basic auto - left", basic_two_cube_auto(false));
     autoChooser.addOption("2 cube basic auto - right", basic_two_cube_auto(true));
-    autoChooser.addOption("Taxi", Taxi_Auto());
+    autoChooser.addOption("Taxi", Taxi_Auto(false));
     autoChooser.addOption("Just Spit", Just_Spit());
-    autoChooser.addOption("DumpAndJumpOnTheBalance", DumpAndJumpOnTheBalance());
+    autoChooser.addOption("DumpAndJumpOnTheBalance", DumpAndJumpOnTheBalance(false));
+    autoChooser.addOption("Taxi Over Balance", Taxi_OverBalance());
     // Places a dropdown in the shuffleboard NOT in the SmartBoard.
     SmartDashboard.putData("Auto modes", autoChooser);
     // }
@@ -193,22 +195,41 @@ public class RobotContainer {
     camera = CameraServer.startAutomaticCapture();
   }
 
-  private Command DumpAndJumpOnTheBalance() {
+  private Command DumpAndJumpOnTheBalance(boolean turning_right) {
+    double rotation_direction = turning_right ? 1 : -1;
+
     return new SequentialCommandGroup(
       new OuttakeCommand(intake).withTimeout(0.5),
       Commands.run(() -> intake.neutral(), intake).withTimeout(0.2 * TIME_SCALE),
-      new DriveBackwardDistance(drive, 0.90, 55), //TODO: refine Distance
+      new DriveBackwardDistance(drive, 0.5, 3), //TODO: refine Distance
+      // new NavXTurn(drive, rotation_direction * 170),
+      // new DriveForwardDistance(drive, 0.7, 52),
+      new DriveBackwardDistance(drive, 0.9, 52),
       BasicAutoBalance()
     );
   }
 
-  private Command Taxi_Auto() {
+  private Command Taxi_Auto(boolean turning_right) {
     return new SequentialCommandGroup(
       new OuttakeCommand(intake).withTimeout(0.5),
       Commands.run(() -> intake.neutral(), intake).withTimeout(0.1),
-      new DriveBackwardDistance(drive, 0.75, 100)
+      new DriveBackwardDistance(drive, 0.75, 160)
     );
   }
+
+  private Command Taxi_OverBalance(){
+    return new SequentialCommandGroup(
+      new OuttakeCommand(intake).withTimeout(0.5),
+      Commands.run(() -> intake.neutral(), intake).withTimeout(0.1),
+      new DriveBackwardDistance(drive, 0.90, 55),
+      new Sit(drive).withTimeout(.5),
+      new AutoBalanceCommandJR(drive, .5),
+      new Sit(drive).withTimeout(.5),
+      new DriveBackwardDistance(drive, .5, 80)
+    );
+  }
+
+  
 
   private Command Just_Spit() {
     return new SequentialCommandGroup(
@@ -243,13 +264,13 @@ public class RobotContainer {
       new Sit(drive).withTimeout(0.2),
 
       new DriveForwardDistance(drive, 0.6,35, intake).setSpeedScaling(true),
-      Commands.run(() -> intake.neutral(), intake).withTimeout(0.1), // intake wasn't turning off
       Commands.run(()-> intake.intakeCube(), intake).withTimeout(0.2), // to deploy
+      Commands.run(() -> intake.neutral(), intake).withTimeout(0.1),
+      new Sit(drive).withTimeout(0.2),
+      new NavXTurn(drive, -rotation_direction * 175),
       new Sit(drive).withTimeout(0.2)
-      //new NavXTurn(drive, -rotation_direction * 170),
-      //new Sit(drive).withTimeout(0.2),
       // comment the remaining out, and build up to it
-      //new DriveForwardDistance(drive, 0.8, 179)
+      //new DriveForwardDistance(drive, 0.8,190)
       //Commands.run(() -> intake.backward(), intake).withTimeout(0.4)
       //Commands.run(() -> intake.neutral(), intake).withTimeout(0.1)
       );
@@ -367,7 +388,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    drive.resetOdometry(exampleTrajectory.getInitialPose());
+    //drive.resetOdometry(exampleTrajectory.getInitialPose());
     return autoChooser.getSelected();
   }
 
