@@ -10,11 +10,13 @@ public class AutoBalanceCommand extends CommandBase {
 	private double error;
 	private double currentAngle;
 	private double drivePower;
+	private double maxSpeed;
 
 	/** Command to use Gyro data to resist the tip angle from the beam - to stabalize and balance */
-	public AutoBalanceCommand(Drive subsys) {
+	public AutoBalanceCommand(Drive subsys, double speed) {
 		m_DriveSubsystem = subsys;
 		addRequirements(m_DriveSubsystem);
+		maxSpeed = speed;
 	}
 
 	// Called when the command is initially scheduled.
@@ -37,7 +39,7 @@ public class AutoBalanceCommand extends CommandBase {
 		}
 
 		// Limit the max power
-		double MAX_POWER = 0.3;
+		double MAX_POWER = maxSpeed;
 		if (Math.abs(drivePower) > MAX_POWER) {
 			drivePower = Math.copySign(MAX_POWER, drivePower);
 		}

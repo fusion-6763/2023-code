@@ -175,6 +175,7 @@ public class RobotContainer {
     autoChooser.addOption("Just Spit", Just_Spit());
     autoChooser.addOption("DumpAndJumpOnTheBalance", DumpAndJumpOnTheBalance(false));
     autoChooser.addOption("Taxi Over Balance", Taxi_OverBalance());
+    autoChooser.addOption("Taxi Over Balance Balance", Taxi_OverBalance_Balance());
     // Places a dropdown in the shuffleboard NOT in the SmartBoard.
     SmartDashboard.putData("Auto modes", autoChooser);
     // }
@@ -184,7 +185,7 @@ public class RobotContainer {
 
     // Sets the drive's default command to "teleop driving"
     drive.setDefaultCommand(Commands.run(
-         () -> drive.arcadeDrive(-m_driverController.getRawAxis(1) * ((minMaxSlider(0.4, 0.9, (-vroomstick.getRawAxis(3) + 1) *.5) * enableControllerSlider) + (driveSpeed * enableDriverBoost)) , -m_driverController.getRawAxis(2) * turnSpeed),
+         () -> drive.arcadeDrive(-m_driverController.getRawAxis(1) * ((minMaxSlider(0.3, 0.5, (-vroomstick.getRawAxis(3) + 1) *.5) * enableControllerSlider) + (driveSpeed * enableDriverBoost)) , -m_driverController.getRawAxis(2) * turnSpeed),
          drive));
 
         
@@ -229,6 +230,24 @@ public class RobotContainer {
     );
   }
 
+  private Command Taxi_OverBalance_Balance(){
+    return new SequentialCommandGroup(
+      new OuttakeCommand(intake).withTimeout(0.5),
+      Commands.run(() -> intake.neutral(), intake).withTimeout(0.1),
+      new DriveBackwardDistance(drive, 0.90, 55),
+      new Sit(drive).withTimeout(.5),
+      new AutoBalanceCommandJR(drive, .5),
+      new Sit(drive).withTimeout(.5),
+      new DriveBackwardDistance(drive, .5, 80),
+      new Sit(drive).withTimeout(.5),
+      new DriveForwardDistance(drive, .90, 80),
+      new Sit(drive).withTimeout(.5),
+      new AutoBalanceCommand(drive, .35),
+      new Sit(drive).withTimeout(.5),
+      new AutoBalanceCommand(drive, .3)
+    );
+  }
+
   
 
   private Command Just_Spit() {
@@ -241,11 +260,11 @@ public class RobotContainer {
 
   private Command BasicAutoBalance() {
     return new SequentialCommandGroup(
-      new AutoBalanceCommand(drive),
+      new AutoBalanceCommand(drive,.3),
       new Sit(drive).withTimeout(1),
-      new AutoBalanceCommand(drive),
+      new AutoBalanceCommand(drive, .3),
       new Sit(drive).withTimeout(1),
-      new AutoBalanceCommand(drive)
+      new AutoBalanceCommand(drive, .3)
     );
   }
 
@@ -260,7 +279,7 @@ public class RobotContainer {
       new DriveBackwardDistance(drive, 0.8, 160),
       new Sit(drive).withTimeout(0.2),
       
-      new NavXTurn(drive, rotation_direction * 170),
+      new NavXTurn(drive, rotation_direction * 169),
       new Sit(drive).withTimeout(0.2),
 
       new DriveForwardDistance(drive, 0.6,35, intake).setSpeedScaling(true),
